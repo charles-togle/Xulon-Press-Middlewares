@@ -2,7 +2,8 @@
 const start = performance.now()
 
 import { createClient } from '@supabase/supabase-js'
-import util from 'util'
+import dotenv from 'dotenv'
+dotenv.config()
 //=====SECRETS===============================================================
 const SUPABASE_URL = process.env.SUPABASE_URL
 const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY
@@ -67,7 +68,7 @@ const updateFactContactTable = async ({
   if (error) {
     return error
   } else {
-    return `Successfully imported contact ${p_fact_id} to go high level`
+    return `Successfully imported contact ${uuid} to go high level`
   }
 }
 

@@ -34,8 +34,8 @@ const getOpportunityExtraInfo = async ({ rating, stage, publisher }) => {
   )
 
   if (error) {
-    console.log('Error getting opportunity info', error)
-    return null
+    // throw so callers can handle this in try/catch
+    throw error
   }
   return data[0]
 }
@@ -46,10 +46,10 @@ const getContactBulkData = async ({ limit }) => {
   })
 
   if (error) {
-    return error
-  } else {
-    return data
+    // throw on error
+    throw error
   }
+  return data
 }
 
 const updateFactContactTable = async ({
@@ -66,7 +66,7 @@ const updateFactContactTable = async ({
   })
 
   if (error) {
-    return error
+    throw error
   } else {
     return `Successfully imported contact ${uuid} to go high level`
   }
@@ -98,8 +98,8 @@ const getCustomContactFields = async () => {
     p_model: 'contact'
   })
   if (error) {
-    console.log('Error getting custom fields', error)
-    return null
+    // allow caller to handle failures
+    throw error
   }
   const cleanedData = combineFieldValues(data)
   return cleanedData
@@ -110,8 +110,7 @@ const getCustomOpportunityFields = async () => {
     p_model: 'opportunity'
   })
   if (error) {
-    console.log('Error getting custom fields', error)
-    return null
+    throw error
   }
   const cleanedData = combineFieldValues(data)
   return cleanedData
@@ -149,9 +148,15 @@ const createGhlOpportunity = async payload => {
 //get contact in supabase
 
 const SUPABASE_RETURN_LIMIT = 10 //how many bulk data will be returned
-const supabase_bulk_data = await getContactBulkData({
-  limit: SUPABASE_RETURN_LIMIT
-})
+let supabase_bulk_data
+try {
+  supabase_bulk_data = await getContactBulkData({
+    limit: SUPABASE_RETURN_LIMIT
+  })
+} catch (error) {
+  console.error('Error fetching bulk contact data from Supabase:', error)
+  process.exit(1)
+}
 
 // if no data returned, inform and skip processing
 if (!Array.isArray(supabase_bulk_data) || supabase_bulk_data.length === 0) {
@@ -160,14 +165,15 @@ if (!Array.isArray(supabase_bulk_data) || supabase_bulk_data.length === 0) {
   )
   process.exit(0)
 }
+
 for (const supabase_contact of supabase_bulk_data) {
   try {
     // get pipeline stage, pipeline id, and salesperson id
     let { pipeline_id, pipeline_stage_id, stage_position, assigned_user_id } =
       await getOpportunityExtraInfo({
-        rating: supabase_contact.rating ?? "1. Hot", 
-        stage: supabase_contact.rating ?? "Proposal Sent",
-        publisher: supabase_contact.publisher ?? " "  
+        rating: supabase_contact.rating ?? '1. Hot',
+        stage: supabase_contact.rating ?? 'Proposal Sent',
+        publisher: supabase_contact.publisher ?? ' '
       })
 
     // get contacts custom fields

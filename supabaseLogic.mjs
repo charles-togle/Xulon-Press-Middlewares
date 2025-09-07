@@ -34,8 +34,8 @@ const getOpportunityExtraInfo = async ({ rating, stage, publisher }) => {
   )
 
   if (error) {
-    console.log('Error getting opportunity info', error)
-    return null
+    // throw so callers can handle this in try/catch
+    throw error
   }
   return data[0]
 }
@@ -46,10 +46,10 @@ const getContactData = async ({ uuid }) => {
   })
 
   if (error) {
-    return error
-  } else {
-    return data
+    // throw on error
+    throw error
   }
+  return data
 }
 
 const updateFactContactTable = async ({
@@ -58,7 +58,7 @@ const updateFactContactTable = async ({
   opportunityId,
   assignedUserId
 }) => {
-  const { data, error } = await supabase.rpc('update_last_assigned_at', {
+  const { error } = await supabase.rpc('update_last_assigned_at', {
     p_assigned_user_id: assignedUserId,
     p_fact_id: uuid,
     p_contact_id: contactId,
@@ -66,7 +66,7 @@ const updateFactContactTable = async ({
   })
 
   if (error) {
-    return error
+    throw error
   } else {
     return `Successfully imported contact ${uuid} to go high level`
   }
@@ -98,8 +98,8 @@ const getCustomContactFields = async () => {
     p_model: 'contact'
   })
   if (error) {
-    console.log('Error getting custom fields', error)
-    return null
+    // allow caller to handle failures
+    throw error
   }
   const cleanedData = combineFieldValues(data)
   return cleanedData
@@ -110,8 +110,7 @@ const getCustomOpportunityFields = async () => {
     p_model: 'opportunity'
   })
   if (error) {
-    console.log('Error getting custom fields', error)
-    return null
+    throw error
   }
   const cleanedData = combineFieldValues(data)
   return cleanedData
@@ -150,15 +149,17 @@ const createGhlOpportunity = async payload => {
 
 const UUID = '6ccef93b-55fe-4c43-939e-01ff02e567a8'
 
-const supabase_data = await getContactData({
-  uuid: UUID
-})
+let supabase_data
+try {
+  supabase_data = await getContactData({ uuid: UUID })
+} catch (error) {
+  console.error('Error fetching contact data from Supabase:', error)
+  process.exit(1)
+}
 
 // if no data returned, inform and exit
 if (!Array.isArray(supabase_data) || supabase_data.length === 0) {
-  console.log(
-    'No records returned from Supabase — every record already imported. Ending process.'
-  )
+  console.log('No records returned from Supabase')
   process.exit(0)
 }
 

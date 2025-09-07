@@ -153,17 +153,18 @@ const supabase_bulk_data = await getContactBulkData({
   limit: SUPABASE_RETURN_LIMIT
 })
 
-supabase_bulk_data.forEach(async supabase_contact => {
-  //get pipeline stage, pipeline id, and salesperson id
+for (const supabase_contact of supabase_bulk_data) {
+  // get pipeline stage, pipeline id, and salesperson id
   let { pipeline_id, pipeline_stage_id, stage_position, assigned_user_id } =
     await getOpportunityExtraInfo({
-      rating: '1. Hot', //get from supabase_contact.rating
+      rating: '1. Hot', // get from supabase_contact.rating
       stage: 'Proposal Sent',
-      publisher: '' //supabase_contact.publisher
+      publisher: '' // supabase_contact.publisher
     })
 
   assigned_user_id = 'b1Hov14TJd4ob9NBEua7'
-  //get contacts custom fields
+
+  // get contacts custom fields
   const contact_custom_fields = await getCustomContactFields()
   const opportunity_custom_fields = await getCustomOpportunityFields()
 
@@ -193,6 +194,7 @@ supabase_bulk_data.forEach(async supabase_contact => {
   }
 
   const contactResponseData = await createGhlContact(contact_payload)
+
   const opportunity_payload = {
     pipelineId: pipeline_id,
     locationId: `${LOCATION_ID}`,
@@ -217,6 +219,6 @@ supabase_bulk_data.forEach(async supabase_contact => {
       opportunityId: opportunityId
     })
   )
-})
+}
 const end = performance.now()
 console.log(`Execution time: ${end - start} ms`)

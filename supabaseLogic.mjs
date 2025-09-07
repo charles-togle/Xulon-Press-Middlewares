@@ -143,6 +143,19 @@ const createGhlOpportunity = async payload => {
   return opportunity_info
 }
 
+const createGhlNote = async payload => {
+  const URL = `${BASE_URL}/contacts/:contactId/notes/`
+
+  const response = await fetch(URL, {
+    body: JSON.stringify(payload),
+    headers: HEADERS,
+    method: 'POST'
+  })
+
+  const opportunity_info = await response.json()
+  return opportunity_info
+}
+
 //PROCESS
 
 //get contact in supabase
@@ -204,11 +217,21 @@ try {
   }
 
   const contactResponseData = await createGhlContact(contact_payload)
+
+  const notes_payload = {
+    userId: contactResponseData.contact.id,
+    body: supabase_contact.notes
+  }
+
+  await createGhlNote(notes_payload)
+
   const opportunity_payload = {
-    pipelineId: pipeline_id,
+    pipelineId: supabase_contact.pipeline_id,
     locationId: `${LOCATION_ID}`,
-    name: 'First Opps',
-    pipelineStageId: pipeline_stage_id,
+    name:
+      `${supabase_contact.first_name} ${supabase_contact.last_name}` ??
+      'Unprovided',
+    pipelineStageId: supabase_contact.stage_id,
     status: 'open',
     contactId: contactResponseData.contact.id,
     assignedTo: assigned_user_id,

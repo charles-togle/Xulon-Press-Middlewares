@@ -100,22 +100,6 @@ Major blocks and how they work:
   - The code fetches custom fields and then iterates over `supabase_bulk_data`.
   - For each contact it: gets pipeline/opportunity info, builds `contact_payload`, posts to GHL, creates an opportunity, and updates Supabase with assigned IDs using `updateFactContactTable`.
   - Uses `forEach(async ...)` in the current file — be aware this does not wait for each async operation to finish before moving on. If you need sequential processing or to wait for all promises, consider using a `for`..`of` loop or `Promise.all` depending on desired behavior.
-
-Important note about concurrency:
-- `supabase_bulk_data.forEach(async contact => { ... })` launches async tasks in parallel but won't allow you to await the whole batch. If you want to process sequentially do:
-
-```javascript
-for (const contact of supabase_bulk_data) {
-  // await inside loop
-}
-```
-
-or to process in parallel and wait for all:
-
-```javascript
-await Promise.all(supabase_bulk_data.map(async contact => { /* ... */ }))
-```
-
 ---
 
 ## Field mapping and custom fields

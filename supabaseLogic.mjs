@@ -154,70 +154,83 @@ const supabase_data = await getContactData({
   uuid: UUID
 })
 
+// if no data returned, inform and exit
+if (!Array.isArray(supabase_data) || supabase_data.length === 0) {
+  console.log(
+    'No records returned from Supabase — every record already imported. Ending process.'
+  )
+  process.exit(0)
+}
+
 const supabase_contact = supabase_data[0]
 
-//get pipeline stage, pipeline id, and salesperson id
-let { pipeline_id, pipeline_stage_id, stage_position, assigned_user_id } =
-  await getOpportunityExtraInfo({
-    rating: '1. Hot', //get from supabase_contact.rating
-    stage: 'Proposal Sent',
-    publisher: '' //supabase_contact.publisher
-  })
+try {
+  //get pipeline stage, pipeline id, and salesperson id
+  let { pipeline_id, pipeline_stage_id, stage_position, assigned_user_id } =
+    await getOpportunityExtraInfo({
+      rating: supabase_contact.rating ?? '1. Hot',
+      stage: supabase_contact.rating ?? 'Proposal Sent',
+      publisher: supabase_contact.publisher ?? ' '
+    })
 
-//get contacts custom fields
-const contact_custom_fields = await getCustomContactFields()
-const opportunity_custom_fields = await getCustomOpportunityFields()
+  //get contacts custom fields
+  const contact_custom_fields = await getCustomContactFields()
+  const opportunity_custom_fields = await getCustomOpportunityFields()
 
-// construct contact payload
-const contact_payload = {
-  firstName: supabase_contact.first_name ?? 'Unprovided',
-  lastName: supabase_contact.last_name ?? 'Unprovided',
-  name:
-    `${supabase_contact.first_name} ${supabase_contact.last_name}` ??
-    'Unprovided',
-  email: supabase_contact.email ?? 'Unprovided',
-  locationId: `${LOCATION_ID}`,
-  phone: supabase_contact.phone_number ?? 'Unprovided',
-  address1: supabase_contact.address_line1 ?? 'Unprovided',
-  city: supabase_contact.city ?? 'Unprovided',
-  state: supabase_contact.state_region ?? 'Unprovided',
-  postalCode: supabase_contact.postalCode ?? 'Unprovided',
-  website: supabase_contact.website_landing_page ?? 'Unprovided',
-  timezone: supabase_contact.time_zone ?? 'Unprovided',
-  dnd: supabase_contact.opt_out_of_email ?? false,
-  inboundDndSettings: { all: { status: 'inactive', message: '' } },
-  tags: ['client', 'lead', 'test-import'],
-  customFields: contact_custom_fields,
-  source: supabase_contact.lead_source ?? 'Unprovided',
-  country: 'US',
-  assignedTo: assigned_user_id
+  // construct contact payload (null coalescence preserved)
+  const contact_payload = {
+    firstName: supabase_contact.first_name ?? 'Unprovided',
+    lastName: supabase_contact.last_name ?? 'Unprovided',
+    name:
+      `${supabase_contact.first_name} ${supabase_contact.last_name}` ??
+      'Unprovided',
+    email: supabase_contact.email ?? 'Unprovided',
+    locationId: `${LOCATION_ID}`,
+    phone: supabase_contact.phone_number ?? 'Unprovided',
+    address1: supabase_contact.address_line1 ?? 'Unprovided',
+    city: supabase_contact.city ?? 'Unprovided',
+    state: supabase_contact.state_region ?? 'Unprovided',
+    postalCode: supabase_contact.postalCode ?? 'Unprovided',
+    website: supabase_contact.website_landing_page ?? 'Unprovided',
+    timezone: supabase_contact.time_zone ?? 'Unprovided',
+    dnd: supabase_contact.opt_out_of_email ?? false,
+    inboundDndSettings: { all: { status: 'inactive', message: '' } },
+    tags: ['client', 'lead', 'test-import'],
+    customFields: contact_custom_fields,
+    source: supabase_contact.lead_source ?? 'Unprovided',
+    country: 'US',
+    assignedTo: assigned_user_id
+  }
+
+  const contactResponseData = await createGhlContact(contact_payload)
+  const opportunity_payload = {
+    pipelineId: pipeline_id,
+    locationId: `${LOCATION_ID}`,
+    name: 'First Opps',
+    pipelineStageId: pipeline_stage_id,
+    status: 'open',
+    contactId: contactResponseData.contact.id,
+    assignedTo: assigned_user_id,
+    customFields: opportunity_custom_fields
+  }
+
+  const opportunityData = await createGhlOpportunity(opportunity_payload)
+
+  const contactId = contactResponseData.contact.id
+  const opportunityId = opportunityData.opportunity.id
+
+  console.log(
+    await updateFactContactTable({
+      uuid: UUID,
+      assignedUserId: assigned_user_id,
+      contactId: contactId,
+      opportunityId: opportunityId
+    })
+  )
+} catch (error) {
+  console.error(`Error processing contact ${UUID}:`, error)
+  process.exit(1)
 }
-
-const contactResponseData = await createGhlContact(contact_payload)
-const opportunity_payload = {
-  pipelineId: pipeline_id,
-  locationId: `${LOCATION_ID}`,
-  name: 'First Opps',
-  pipelineStageId: pipeline_stage_id,
-  status: 'open',
-  contactId: contactResponseData.contact.id,
-  assignedTo: assigned_user_id,
-  customFields: opportunity_custom_fields
-}
-
-const opportunityData = await createGhlOpportunity(opportunity_payload)
-
-const contactId = contactResponseData.contact.id
-const opportunityId = opportunityData.opportunity.id
-
-console.log(
-  await updateFactContactTable({
-    uuid: UUID,
-    assignedUserId: assigned_user_id,
-    contactId: contactId,
-    opportunityId: opportunityId
-  })
-)
 
 //analytics
 const end = performance.now()

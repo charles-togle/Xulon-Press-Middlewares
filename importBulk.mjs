@@ -148,7 +148,7 @@ const createGhlOpportunity = async payload => {
 
 //get contact in supabase
 
-const SUPABASE_RETURN_LIMIT = 3 //how many bulk data will be returned
+const SUPABASE_RETURN_LIMIT = 10 //how many bulk data will be returned
 const supabase_bulk_data = await getContactBulkData({
   limit: SUPABASE_RETURN_LIMIT
 })
@@ -193,8 +193,6 @@ supabase_bulk_data.forEach(async supabase_contact => {
   }
 
   const contactResponseData = await createGhlContact(contact_payload)
-  console.log('contact data: ', contactResponseData)
-  console.log('contact id: ', contactResponseData.contact.id)
   const opportunity_payload = {
     pipelineId: pipeline_id,
     locationId: `${LOCATION_ID}`,
@@ -207,7 +205,6 @@ supabase_bulk_data.forEach(async supabase_contact => {
   }
 
   const opportunityData = await createGhlOpportunity(opportunity_payload)
-  console.log('opportunity data: ', opportunityData)
 
   const contactId = contactResponseData.contact.id
   const opportunityId = opportunityData.opportunity.id

@@ -68,7 +68,7 @@ const updateFactContactTable = async ({
   if (error) {
     return error
   } else {
-    return `Successfully imported contact ${p_fact_id} to go high level`
+    return `Successfully imported contact ${uuid} to go high level`
   }
 }
 

@@ -1,4 +1,10 @@
 {
+  "type": "module",
+  "scripts": {
+    "import-bulk": "node importBulk.mjs",
+    "supabase-logic": "node supabaseLogic.mjs",
+    "test": "echo \"no tests\" && exit 0"
+  },
   "dependencies": {
     "@supabase/supabase-js": "^2.57.2",
     "dotenv": "^17.2.2",

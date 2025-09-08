@@ -56,21 +56,19 @@ const getContactBulkData = async ({ limit }) => {
 const updateFactContactTable = async ({
   uuid,
   contactId,
-  opportunityId,
   assignedUserId,
   number
 }) => {
-  const { error } = await supabase.rpc('update_last_assigned_at', {
+  const { error } = await supabase.rpc('contact_only_update_last_assigned_at', {
     p_assigned_user_id: assignedUserId,
     p_fact_id: uuid,
-    p_contact_id: contactId,
-    p_opportunity_id: opportunityId
+    p_contact_id: contactId
   })
 
   if (error) {
     throw error
   } else {
-    return `Contact #${i}: Successfully imported contact ${uuid} to go high level`
+    return `Contact #${number}: Successfully imported contact ${uuid} to go high level`
   }
 }
 
@@ -107,17 +105,6 @@ const getCustomContactFields = async () => {
   return cleanedData
 }
 
-const getCustomOpportunityFields = async () => {
-  const { data, error } = await supabase.rpc('get_custom_fields_with_options', {
-    p_model: 'opportunity'
-  })
-  if (error) {
-    throw error
-  }
-  const cleanedData = combineFieldValues(data)
-  return cleanedData
-}
-
 //GHL API REQUESTS
 const createGhlContact = async payload => {
   const URL = `${BASE_URL}/contacts`
@@ -132,19 +119,6 @@ const createGhlContact = async payload => {
   return contactInfo
 }
 
-const createGhlOpportunity = async payload => {
-  const URL = `${BASE_URL}/opportunities/`
-
-  const response = await fetch(URL, {
-    body: JSON.stringify(payload),
-    headers: HEADERS,
-    method: 'POST'
-  })
-
-  const opportunity_info = await response.json()
-  return opportunity_info
-}
-
 const createGhlNote = async (payload, contactId) => {
   const URL = `${BASE_URL}/contacts/${contactId}/notes/`
 
@@ -154,15 +128,15 @@ const createGhlNote = async (payload, contactId) => {
     method: 'POST'
   })
 
-  const opportunity_info = await response.json()
-  return opportunity_info
+  const note_info = await response.json()
+  return note_info
 }
 
 //PROCESS
 
 //get contact in supabase
 
-const SUPABASE_RETURN_LIMIT = 10 //how many bulk data will be returned
+const SUPABASE_RETURN_LIMIT = 1 //how many bulk data will be returned
 let supabase_bulk_data
 try {
   supabase_bulk_data = await getContactBulkData({
@@ -182,7 +156,6 @@ if (!Array.isArray(supabase_bulk_data) || supabase_bulk_data.length === 0) {
 }
 let i = 1
 let contact_response
-let opportunity_response
 let contact_payload_error
 let current_fact_id
 
@@ -237,59 +210,6 @@ for (const supabase_contact of supabase_bulk_data) {
       {
         id: 'JMwy9JsVRTTzg4PDQnhk',
         key: 'source_detail_value_c',
-        field_value: supabase_contact.website_landing_page ?? 'Unprovided'
-      }
-    ]
-
-    const opportunity_custom_fields = [
-      {
-        id: 'ggsTQrS88hJgLI5J5604',
-        key: 'publisher',
-        field_value: supabase_contact.publisher
-      },
-      {
-        id: 'gsFwmLo8XyzCjIoXxXYQ',
-        key: 'timezone',
-        field_value: supabase_contact.time_zone
-      },
-      {
-        id: '4P0Yd0fLzOfns3opxTGo',
-        key: 'active_or_past_author',
-        field_value: supabase_contact.is_author ? 'Yes' : 'No'
-      },
-      {
-        id: '5wlgHZzuWLyr918dMh7y',
-        key: 'genre',
-        field_value: supabase_contact.genre[0]
-      },
-      {
-        id: 'cG5oYGyyKmEWwzn7y8HA',
-        key: 'writing_process',
-        field_value: supabase_contact.writing_status
-      },
-      {
-        id: 'BOGtp8xLezwurePxIkNE',
-        key: 'outreach_attempt',
-        field_value: `${supabase_contact.outreach_attempt}`
-      },
-      {
-        id: '5lDyHBJDAukD5YM7M4WG',
-        key: 'proposal_link',
-        field_value: supabase_contact.einstein_url
-      },
-      {
-        id: 'aOH64ZsyJ5blAZtf9IxK',
-        key: 'book_description',
-        field_value: supabase_contact.book_description
-      },
-      {
-        id: 'uUEENCZJBnr0mjbuPe98',
-        key: 'pipeline_backup',
-        field_value: supabase_contact.rating
-      },
-      {
-        id: 'UAjLmcYVz1hdI4sPVKSr',
-        key: 'source_detail_value',
         field_value: supabase_contact.website_landing_page ?? 'Unprovided'
       }
     ]
@@ -368,31 +288,11 @@ for (const supabase_contact of supabase_bulk_data) {
       contact_id
     )
 
-    const opportunity_payload = {
-      pipelineId: supabase_contact.pipeline_id,
-      locationId: `${LOCATION_ID}`,
-      name:
-        `${supabase_contact.first_name} ${supabase_contact.last_name}` ??
-        'Unprovided',
-      pipelineStageId: supabase_contact.stage_id,
-      status: 'open',
-      contactId: contact_id,
-      assignedTo: assigned_user_id,
-      customFields: opportunity_custom_fields,
-      source: supabase_contact.source ?? 'Unprovided'
-    }
-
-    const opportunityData = await createGhlOpportunity(opportunity_payload)
-    opportunity_response = opportunityData
-
-    const opportunityId = opportunityData.opportunity.id
-
     console.log(
       await updateFactContactTable({
         uuid: supabase_contact.fact_id,
         assignedUserId: assigned_user_id,
         contactId: contact_id,
-        opportunityId: opportunityId,
         number: i
       })
     )
@@ -413,10 +313,6 @@ for (const supabase_contact of supabase_bulk_data) {
       await supabase.rpc('mark_fact_contact_duplicate', {
         p_fact_id: current_fact_id
       })
-    }
-
-    if (opportunity_response) {
-      console.error('Error creating opportunity: ', opportunity_response)
     }
     i++
     continue

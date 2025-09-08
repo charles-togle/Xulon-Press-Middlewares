@@ -326,13 +326,11 @@ for (const supabase_contact of supabase_bulk_data) {
       contact_payload['phone'] = supabase_contact.phone_number
     }
 
-    let contact_id
-    if (!supabase_contact.contact_id) {
+    let contact_id = supabase_contact.contact_id
+    if (!contact_id) {
       const contactResponseData = await createGhlContact(contact_payload)
       contact_response = contactResponseData
       contact_id = contactResponseData.contact.id
-    } else {
-      contact_id = supabase_contact.contact_id
     }
 
     const einstein_notes_payload = {

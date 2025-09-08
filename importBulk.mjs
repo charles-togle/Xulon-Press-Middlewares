@@ -272,7 +272,7 @@ for (const supabase_contact of supabase_bulk_data) {
       address1: supabase_contact.address_line1 ?? 'Unprovided',
       city: supabase_contact.city ?? 'Unprovided',
       state: supabase_contact.state_region ?? 'Unprovided',
-      postalCode: supabase_contact.postalCode ?? 'Unprovided',
+      postalCode: supabase_contact.postal_code ?? 'Unprovided',
       website: supabase_contact.website_landing_page ?? 'Unprovided',
       timezone: supabase_contact.time_zone ?? 'Unprovided',
       dnd: supabase_contact.opt_out_of_email ?? false,
@@ -343,7 +343,7 @@ for (const supabase_contact of supabase_bulk_data) {
     console.log(
       await updateFactContactTable({
         uuid: supabase_contact.fact_id,
-        assignedUserId: assigned_user_id,
+        assignedUserId: supabase_contact.lead_owner,
         contactId: contactId,
         opportunityId: opportunityId
       })

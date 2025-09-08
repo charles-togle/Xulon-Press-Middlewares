@@ -161,7 +161,7 @@ const createGhlNote = async (payload, contactId) => {
 
 //get contact in supabase
 
-const SUPABASE_RETURN_LIMIT = 15 //how many bulk data will be returned
+const SUPABASE_RETURN_LIMIT = 100 //how many bulk data will be returned
 let supabase_bulk_data
 try {
   supabase_bulk_data = await getContactBulkData({
@@ -179,39 +179,87 @@ if (!Array.isArray(supabase_bulk_data) || supabase_bulk_data.length === 0) {
   )
   process.exit(0)
 }
-
-//get custom fields
-const contact_custom_fields = await getCustomContactFields()
-const opportunity_custom_fields = await getCustomOpportunityFields()
-
 for (const supabase_contact of supabase_bulk_data) {
   try {
-    // get pipeline stage, pipeline id, and salesperson id
-    // let {
-    //   // pipeline_id,
-    //   // pipeline_stage_id,
-    //   // stage_position,
-    //   assigned_user_id } =
-    //   await getOpportunityExtraInfo({
-    //     rating: supabase_contact.rating ?? '1. Hot',
-    //     stage: supabase_contact.pipeline_stage ?? 'Proposal Sent',
-    //     publisher: supabase_contact.publisher ?? ' '
-    //   })
-
-    let {
-      // pipeline_id,
-      // pipeline_stage_id,
-      // stage_position,
-      assigned_user_id
-    } = await getOpportunityExtraInfo({
+    let { assigned_user_id } = await getOpportunityExtraInfo({
       rating: '1. Hot',
       stage: 'Proposal Sent',
       publisher: supabase_contact.publisher ?? ' '
     })
 
-    
-    // get contacts custom fields
-    // construct contact payload (null coalescence preserved)
+    //custom fields
+    const contact_custom_fields = [
+      {
+        id: 'AMgJg4wIu7GKV02OGxD3',
+        key: 'publisher',
+        field_value: supabase_contact.publisher
+      },
+      {
+        id: 'fFWUJ9OFbYBqVJjwjQGP',
+        key: 'timezone_c',
+        field_value: supabase_contact.time_zone
+      },
+      {
+        id: 'ZXykBROLtnEh5A5vaT2B',
+        key: 'active_campaigns_c',
+        field_value: []
+      },
+      {
+        id: 'IjmRpmQlwHiJjGnTLptG',
+        key: 'contact_source_detail',
+        field_value: supabase_contact.lead_source
+      },
+      {
+        id: 'JMwy9JsVRTTzg4PDQnhk',
+        key: 'source_detail_value_c',
+        field_value: supabase_contact.source
+      }
+    ]
+
+    const opportunity_custom_fields = [
+      {
+        id: 'ggsTQrS88hJgLI5J5604',
+        field_value: supabase_contact.publisher
+      },
+      {
+        id: 'gsFwmLo8XyzCjIoXxXYQ',
+        field_value: supabase_contact.time_zone
+      },
+      {
+        id: '4P0Yd0fLzOfns3opxTGo',
+        field_value: supabase_contact.is_author ? 'Yes' : 'No'
+      },
+      {
+        id: '5wlgHZzuWLyr918dMh7y',
+        field_value: supabase_contact.genre[0]
+      },
+      {
+        id: 'cG5oYGyyKmEWwzn7y8HA',
+        field_value: supabase_contact.writing_status
+      },
+      {
+        id: 'BOGtp8xLezwurePxIkNE',
+        field_value: `${supabase_contact.outreach_attempt}`
+      },
+      {
+        id: '5lDyHBJDAukD5YM7M4WG',
+        field_value: supabase_contact.einstein_url
+      },
+      {
+        id: 'aOH64ZsyJ5blAZtf9IxK',
+        field_value: supabase_contact.book_description
+      },
+      {
+        id: 'uUEENCZJBnr0mjbuPe98',
+        field_value: supabase_contact.rating
+      },
+      {
+        id: 'UAjLmcYVz1hdI4sPVKSr',
+        field_value: 'Unprovided'
+      }
+    ]
+
+    // construct contact payload
     let contact_payload = {
       firstName: supabase_contact.first_name ?? 'Unprovided',
       lastName: supabase_contact.last_name ?? 'Unprovided',
@@ -229,8 +277,11 @@ for (const supabase_contact of supabase_bulk_data) {
       timezone: supabase_contact.time_zone ?? 'Unprovided',
       dnd: supabase_contact.opt_out_of_email ?? false,
       customFields: contact_custom_fields,
-      source: supabase_contact.lead_source ?? 'Unprovided',
-      country: supabase_contact.country,
+      source: supabase_contact.source ?? 'Unprovided',
+      country:
+        supabase_contact.country === 'Unprovided'
+          ? 'US'
+          : supabase_contact.country,
       assignedTo: supabase_contact.lead_owner
     }
 
@@ -244,17 +295,23 @@ for (const supabase_contact of supabase_bulk_data) {
       }
     }
 
-    console.log(util.inspect(contact_payload, false, null, true))
     const contactResponseData = await createGhlContact(contact_payload)
-    console.log(contactResponseData)
 
-    const notes_payload = {
+    console.log(contactResponseData)
+    const einstein_notes_payload = {
       userId: 'JERtBepiajyLX1Pghv3T',
-      body: supabase_contact.notes
+      body: `Proposal Link: \n\n ${supabase_contact.einstein_url}`
     }
 
-    const noteResponseData = await createGhlNote(notes_payload, contactResponseData.contac.id)
-    console.log('note:', noteResponseData)
+    if (!supabase_contact.notes || supabase_contact.notes === 'Unprovided') {
+      const notes_payload = {
+        userId: 'JERtBepiajyLX1Pghv3T',
+        body: supabase_contact.notes
+      }
+      await createGhlNote(notes_payload, contactResponseData.contact.id)
+    }
+
+    await createGhlNote(einstein_notes_payload, contactResponseData.contact.id)
 
     const opportunity_payload = {
       pipelineId: supabase_contact.pipeline_id,
@@ -270,8 +327,6 @@ for (const supabase_contact of supabase_bulk_data) {
     }
 
     const opportunityData = await createGhlOpportunity(opportunity_payload)
-    console.log(opportunityData)
-
     const contactId = contactResponseData.contact.id
     const opportunityId = opportunityData.opportunity.id
 

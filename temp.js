@@ -39,3 +39,15 @@ const opportunity_payload = {
   assignedTo: assigned_user_id,
   customFields: opportunity_custom_fields
 }
+
+// get pipeline stage, pipeline id, and salesperson id
+let {
+  // pipeline_id,
+  // pipeline_stage_id,
+  // stage_position,
+  assigned_user_id
+} = await getOpportunityExtraInfo({
+  rating: supabase_contact.rating ?? '1. Hot',
+  stage: supabase_contact.pipeline_stage ?? 'Proposal Sent',
+  publisher: supabase_contact.publisher ?? ' '
+})

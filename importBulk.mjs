@@ -286,7 +286,6 @@ for (const supabase_contact of supabase_bulk_data) {
       name:
         `${supabase_contact.first_name} ${supabase_contact.last_name}` ??
         'Unprovided',
-      email: supabase_contact.email ?? 'Unprovided',
       locationId: `${LOCATION_ID}`,
       address1: supabase_contact.address_line1 ?? 'Unprovided',
       city: supabase_contact.city ?? 'Unprovided',
@@ -316,15 +315,25 @@ for (const supabase_contact of supabase_bulk_data) {
       }
     }
 
+    if (supabase_contact.email && supabase_contact.email !== 'Unprovided') {
+      contact_payload['email'] = supabase_contact.email
+    }
+
     if (
-      supabase_contact.phone_number ||
+      supabase_contact.phone_number &&
       supabase_contact.phone_number !== 'Unprovided'
     ) {
       contact_payload['phone'] = supabase_contact.phone_number
     }
 
-    const contactResponseData = await createGhlContact(contact_payload)
-    contact_response = contactResponseData
+    let contact_id
+    if (!supabase_contact.contact_id) {
+      const contactResponseData = await createGhlContact(contact_payload)
+      contact_response = contactResponseData
+      contact_id = contactResponseData.contact.id
+    } else {
+      contact_id = supabase_contact.contact_id
+    }
 
     const einstein_notes_payload = {
       userId: 'JERtBepiajyLX1Pghv3T',
@@ -336,15 +345,13 @@ for (const supabase_contact of supabase_bulk_data) {
         userId: 'JERtBepiajyLX1Pghv3T',
         body: supabase_contact.notes
       }
-      const defNotes = await createGhlNote(
-        notes_payload,
-        contactResponseData.contact.id
-      )
+
+      const defNotes = await createGhlNote(notes_payload, contact_id)
     }
 
     const einsteinNotes = await createGhlNote(
       einstein_notes_payload,
-      contactResponseData.contact.id
+      contact_id
     )
 
     const opportunity_payload = {
@@ -355,7 +362,7 @@ for (const supabase_contact of supabase_bulk_data) {
         'Unprovided',
       pipelineStageId: supabase_contact.stage_id,
       status: 'open',
-      contactId: contactResponseData.contact.id,
+      contactId: contact_id,
       assignedTo: assigned_user_id,
       customFields: opportunity_custom_fields,
       source: supabase_contact.source ?? 'Unprovided'
@@ -364,14 +371,13 @@ for (const supabase_contact of supabase_bulk_data) {
     const opportunityData = await createGhlOpportunity(opportunity_payload)
     opportunity_response = opportunityData
 
-    const contactId = contactResponseData.contact.id
     const opportunityId = opportunityData.opportunity.id
 
     console.log(
       await updateFactContactTable({
         uuid: supabase_contact.fact_id,
         assignedUserId: supabase_contact.lead_owner,
-        contactId: contactId,
+        contactId: contact_id,
         opportunityId: opportunityId,
         number: i
       })
@@ -384,7 +390,7 @@ for (const supabase_contact of supabase_bulk_data) {
       }:`,
       error
     )
-    console.log(contact_name)
+    console.log(contact_payload_error)
     console.error(console.error('Error creating contact: ', contact_response))
     if (opportunity_response) {
       console.error('Error creating opportunity: ', opportunity_response)

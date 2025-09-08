@@ -374,7 +374,7 @@ for (const supabase_contact of supabase_bulk_data) {
     console.log(
       await updateFactContactTable({
         uuid: supabase_contact.fact_id,
-        assignedUserId: supabase_contact.lead_owner,
+        assignedUserId: assigned_user_id,
         contactId: contact_id,
         opportunityId: opportunityId,
         number: i

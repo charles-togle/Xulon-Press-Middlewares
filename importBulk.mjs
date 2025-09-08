@@ -162,7 +162,7 @@ const createGhlNote = async (payload, contactId) => {
 
 //get contact in supabase
 
-const SUPABASE_RETURN_LIMIT = 300 //how many bulk data will be returned
+const SUPABASE_RETURN_LIMIT = 50 //how many bulk data will be returned
 let supabase_bulk_data
 try {
   supabase_bulk_data = await getContactBulkData({
@@ -207,7 +207,7 @@ for (const supabase_contact of supabase_bulk_data) {
       {
         id: 'fFWUJ9OFbYBqVJjwjQGP',
         key: 'timezone_c',
-        field_value: supabase_contact.time_zone
+        field_value: supabase_contact.time_zone ?? 'Unprovided'
       },
       {
         id: 'ZXykBROLtnEh5A5vaT2B',
@@ -217,12 +217,15 @@ for (const supabase_contact of supabase_bulk_data) {
       {
         id: 'IjmRpmQlwHiJjGnTLptG',
         key: 'contact_source_detail',
-        field_value: supabase_contact.lead_source
+        field_value:
+          supabase_contact.lead_source === ''
+            ? 'Unprovided'
+            : supabase_contact.lead_source
       },
       {
         id: 'JMwy9JsVRTTzg4PDQnhk',
         key: 'source_detail_value_c',
-        field_value: supabase_contact.website_landing_page
+        field_value: supabase_contact.website_landing_page ?? 'Unprovided'
       }
     ]
 
@@ -275,7 +278,7 @@ for (const supabase_contact of supabase_bulk_data) {
       {
         id: 'UAjLmcYVz1hdI4sPVKSr',
         key: 'source_detail_value',
-        field_value: supabase_contact.website_landing_page
+        field_value: supabase_contact.website_landing_page ?? 'Unprovided'
       }
     ]
 
@@ -297,13 +300,14 @@ for (const supabase_contact of supabase_bulk_data) {
       customFields: contact_custom_fields,
       source: supabase_contact.source ?? 'Unprovided',
       country:
-        supabase_contact.country === 'Unprovided'
+        supabase_contact.country === 'Unprovided' || !supabase_contact.country
           ? 'US'
           : supabase_contact.country,
       assignedTo: assigned_user_id
     }
     contact_payload_error = contact_payload
 
+    console.log(util.inspect(contact_payload, false, null, true))
     //check the values
     if (supabase_contact.opt_out_of_email) {
       contact_payload['dndSettings'] = {

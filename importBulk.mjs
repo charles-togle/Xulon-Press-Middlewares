@@ -296,6 +296,7 @@ for (const supabase_contact of supabase_bulk_data) {
     }
 
     const contactResponseData = await createGhlContact(contact_payload)
+    console.log(contactResponseData)
 
     console.log(contactResponseData)
     const einstein_notes_payload = {
@@ -308,10 +309,18 @@ for (const supabase_contact of supabase_bulk_data) {
         userId: 'JERtBepiajyLX1Pghv3T',
         body: supabase_contact.notes
       }
-      await createGhlNote(notes_payload, contactResponseData.contact.id)
+      const defNotes = await createGhlNote(
+        notes_payload,
+        contactResponseData.contact.id
+      )
+      console.log(defNotes)
     }
 
-    await createGhlNote(einstein_notes_payload, contactResponseData.contact.id)
+    const einsteinNotes = await createGhlNote(
+      einstein_notes_payload,
+      contactResponseData.contact.id
+    )
+    console.log(einsteinNotes)
 
     const opportunity_payload = {
       pipelineId: supabase_contact.pipeline_id,
@@ -327,6 +336,7 @@ for (const supabase_contact of supabase_bulk_data) {
     }
 
     const opportunityData = await createGhlOpportunity(opportunity_payload)
+    console.log(opportunityData)
     const contactId = contactResponseData.contact.id
     const opportunityId = opportunityData.opportunity.id
 

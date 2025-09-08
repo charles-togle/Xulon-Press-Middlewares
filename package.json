@@ -9,5 +9,20 @@
     "@supabase/supabase-js": "^2.57.2",
     "dotenv": "^17.2.2",
     "node-fetch": "^3.3.2"
-  }
+  },
+  "name": "xulon-press-test-functions",
+  "version": "1.0.0",
+  "description": "Quick guide: how to run the scripts in this repo and what each script does.",
+  "main": "supabase.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/charles-togle/Xulon-Press-Test-Functions.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/charles-togle/Xulon-Press-Test-Functions/issues"
+  },
+  "homepage": "https://github.com/charles-togle/Xulon-Press-Test-Functions#readme"
 }

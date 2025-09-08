@@ -4,6 +4,7 @@ const start = performance.now()
 import { createClient } from '@supabase/supabase-js'
 import dotenv from 'dotenv'
 dotenv.config()
+import util from 'util'
 //=====SECRETS===============================================================
 const SUPABASE_URL = process.env.SUPABASE_URL
 const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY
@@ -143,8 +144,8 @@ const createGhlOpportunity = async payload => {
   return opportunity_info
 }
 
-const createGhlNote = async payload => {
-  const URL = `${BASE_URL}/contacts/:contactId/notes/`
+const createGhlNote = async (payload, contactId) => {
+  const URL = `${BASE_URL}/contacts/${contactId}/notes/`
 
   const response = await fetch(URL, {
     body: JSON.stringify(payload),
@@ -160,7 +161,7 @@ const createGhlNote = async payload => {
 
 //get contact in supabase
 
-const SUPABASE_RETURN_LIMIT = 10 //how many bulk data will be returned
+const SUPABASE_RETURN_LIMIT = 15 //how many bulk data will be returned
 let supabase_bulk_data
 try {
   supabase_bulk_data = await getContactBulkData({
@@ -179,22 +180,39 @@ if (!Array.isArray(supabase_bulk_data) || supabase_bulk_data.length === 0) {
   process.exit(0)
 }
 
+//get custom fields
+const contact_custom_fields = await getCustomContactFields()
+const opportunity_custom_fields = await getCustomOpportunityFields()
+
 for (const supabase_contact of supabase_bulk_data) {
   try {
     // get pipeline stage, pipeline id, and salesperson id
-    let { pipeline_id, pipeline_stage_id, stage_position, assigned_user_id } =
-      await getOpportunityExtraInfo({
-        rating: supabase_contact.rating ?? '1. Hot',
-        stage: supabase_contact.rating ?? 'Proposal Sent',
-        publisher: supabase_contact.publisher ?? ' '
-      })
+    // let {
+    //   // pipeline_id,
+    //   // pipeline_stage_id,
+    //   // stage_position,
+    //   assigned_user_id } =
+    //   await getOpportunityExtraInfo({
+    //     rating: supabase_contact.rating ?? '1. Hot',
+    //     stage: supabase_contact.pipeline_stage ?? 'Proposal Sent',
+    //     publisher: supabase_contact.publisher ?? ' '
+    //   })
 
+    let {
+      // pipeline_id,
+      // pipeline_stage_id,
+      // stage_position,
+      assigned_user_id
+    } = await getOpportunityExtraInfo({
+      rating: '1. Hot',
+      stage: 'Proposal Sent',
+      publisher: supabase_contact.publisher ?? ' '
+    })
+
+    
     // get contacts custom fields
-    const contact_custom_fields = await getCustomContactFields()
-    const opportunity_custom_fields = await getCustomOpportunityFields()
-
     // construct contact payload (null coalescence preserved)
-    const contact_payload = {
+    let contact_payload = {
       firstName: supabase_contact.first_name ?? 'Unprovided',
       lastName: supabase_contact.last_name ?? 'Unprovided',
       name:
@@ -210,22 +228,33 @@ for (const supabase_contact of supabase_bulk_data) {
       website: supabase_contact.website_landing_page ?? 'Unprovided',
       timezone: supabase_contact.time_zone ?? 'Unprovided',
       dnd: supabase_contact.opt_out_of_email ?? false,
-      inboundDndSettings: { all: { status: 'inactive', message: '' } },
-      tags: ['client', 'lead', 'test-import'],
       customFields: contact_custom_fields,
       source: supabase_contact.lead_source ?? 'Unprovided',
-      country: 'US',
-      assignedTo: assigned_user_id
+      country: supabase_contact.country,
+      assignedTo: supabase_contact.lead_owner
     }
 
+    if (supabase_contact.opt_out_of_email) {
+      contact_payload['dndSettings'] = {
+        Email: { status: 'active', message: '', code: '' }
+      }
+    } else {
+      contact_payload['dndSettings'] = {
+        Email: { status: 'inactive', message: '', code: '' }
+      }
+    }
+
+    console.log(util.inspect(contact_payload, false, null, true))
     const contactResponseData = await createGhlContact(contact_payload)
+    console.log(contactResponseData)
 
     const notes_payload = {
-      userId: contactResponseData.contact.id,
+      userId: 'JERtBepiajyLX1Pghv3T',
       body: supabase_contact.notes
     }
 
-    await createGhlNote(notes_payload)
+    const noteResponseData = await createGhlNote(notes_payload, contactResponseData.contac.id)
+    console.log('note:', noteResponseData)
 
     const opportunity_payload = {
       pipelineId: supabase_contact.pipeline_id,
@@ -236,11 +265,12 @@ for (const supabase_contact of supabase_bulk_data) {
       pipelineStageId: supabase_contact.stage_id,
       status: 'open',
       contactId: contactResponseData.contact.id,
-      assignedTo: assigned_user_id,
+      assignedTo: supabase_contact.lead_owner,
       customFields: opportunity_custom_fields
     }
 
     const opportunityData = await createGhlOpportunity(opportunity_payload)
+    console.log(opportunityData)
 
     const contactId = contactResponseData.contact.id
     const opportunityId = opportunityData.opportunity.id
@@ -258,7 +288,6 @@ for (const supabase_contact of supabase_bulk_data) {
       `Error processing contact ${supabase_contact?.fact_id ?? 'unknown'}:`,
       error
     )
-    // continue to next contact
     continue
   }
 }

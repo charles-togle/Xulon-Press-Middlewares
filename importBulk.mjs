@@ -86,49 +86,6 @@ const updateFactContactTable = async ({
   }
 }
 
-//helper function for custom fields
-function combineFieldValues (data) {
-  const map = new Map()
-
-  data.forEach(item => {
-    const key = `${item.id}:${item.key}`
-    if (!map.has(key)) {
-      map.set(key, { id: item.id, key: item.key, field_value: [] })
-    }
-    map.get(key).field_value.push(item.field_value)
-  })
-
-  return Array.from(map.values()).map(obj => ({
-    id: obj.id,
-    key: obj.key,
-    field_value:
-      obj.field_value.length === 1 ? obj.field_value[0] : obj.field_value
-  }))
-}
-
-//Custom Fields
-const getCustomContactFields = async () => {
-  const { data, error } = await supabase.rpc('get_custom_fields_with_options', {
-    p_model: 'contact'
-  })
-  if (error) {
-    // allow caller to handle failures
-    throw error
-  }
-  const cleanedData = combineFieldValues(data)
-  return cleanedData
-}
-
-const getCustomOpportunityFields = async () => {
-  const { data, error } = await supabase.rpc('get_custom_fields_with_options', {
-    p_model: 'opportunity'
-  })
-  if (error) {
-    throw error
-  }
-  const cleanedData = combineFieldValues(data)
-  return cleanedData
-}
 
 //GHL API REQUESTS
 const createGhlContact = async payload => {
@@ -200,7 +157,7 @@ const createGhlNote = async (payload, contactId) => {
     response.headers.get('X-RateLimit-Interval-Milliseconds')
   )
   const note_info = await response.json()
-  return note_info_info
+  return note_info
 }
 
 //PROCESS

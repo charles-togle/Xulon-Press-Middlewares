@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js'
 import dotenv from 'dotenv'
 dotenv.config()
 
+const start = performance.now()
 const EMAIL = process.env.SUPABASE_SUPERADMIN_EMAIL
 const PASSWORD = process.env.SUPABASE_SUPERADMIN_PASSWORD
 const SUPABASE_URL = process.env.SUPABASE_URL
@@ -44,3 +45,6 @@ if (functionError) {
 } else {
   console.log(data)
 }
+
+const end = performance.now()
+console.log(`Execution time: ${end - start} ms`)

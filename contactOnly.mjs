@@ -131,9 +131,6 @@ const createGhlContact = async payload => {
     method: 'POST'
   })
 
-  dailyRemaining = response.headers.get('X-RateLimit-Daily-Remaining')
-  dailyLimit = response.headers.get('X-RateLimit-Limit-Daily')
-
   console.log(
     'remaining number of requests in the current 10s time interval: ',
     response.headers.get('X-RateLimit-Remaining')
@@ -164,6 +161,9 @@ const createGhlNote = async (payload, contactId) => {
     'Time interval for burst requests: ',
     response.headers.get('X-RateLimit-Interval-Milliseconds')
   )
+
+  dailyRemaining = response.headers.get('X-RateLimit-Daily-Remaining')
+  dailyLimit = response.headers.get('X-RateLimit-Limit-Daily')
   const note_info = await response.json()
   return note_info
 }
@@ -172,7 +172,7 @@ const createGhlNote = async (payload, contactId) => {
 
 //get contact in supabase
 
-const SUPABASE_RETURN_LIMIT = 99 //how many bulk data will be returned
+const SUPABASE_RETURN_LIMIT = 1000 //how many bulk data will be returned
 let supabase_bulk_data
 try {
   supabase_bulk_data = await getContactBulkData({
@@ -275,8 +275,6 @@ for (const supabase_contact of supabase_bulk_data) {
     }
     contact_payload_error = contact_payload
 
-    console.log(util.inspect(contact_payload, false, null, true))
-
     //check the values
     if (supabase_contact.opt_out_of_email) {
       contact_payload['dndSettings'] = {
@@ -334,7 +332,6 @@ for (const supabase_contact of supabase_bulk_data) {
       })
     )
     i++
-    console.log(`Daily Remaining Limit: ${dailyRemaining}/${dailyLimit}`)
   } catch (error) {
     console.error(
       `Contact #${i}: Error processing contact ${
@@ -355,9 +352,10 @@ for (const supabase_contact of supabase_bulk_data) {
     i++
     continue
   } finally {
-    supabase.auth.signOut
+    console.log(`Daily Remaining Limit: ${dailyRemaining}/${dailyLimit}`)
   }
 }
 
+supabase.auth.signOut
 const end = performance.now()
 console.log(`Execution time: ${end - start} ms`)

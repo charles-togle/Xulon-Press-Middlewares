@@ -25,15 +25,17 @@ const HEADERS = {
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
-const { loginError: error } = await supabase.auth.signInWithPassword({
+const { error } = await supabase.auth.signInWithPassword({
   email: EMAIL,
   password: PASSWORD
 })
 
-if (loginError) {
+
+if (error) {
   console.error('Error authenticating user: ', error)
   process.exit(0)
 }
+
 
 //Database Request
 const getOpportunityExtraInfo = async ({ rating, stage, publisher }) => {

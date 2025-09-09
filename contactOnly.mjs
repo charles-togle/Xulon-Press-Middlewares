@@ -12,6 +12,8 @@ const BASE_URL = process.env.BASE_URL
 const API_VERSION = process.env.API_VERSION
 const TOKEN = process.env.TOKEN
 const LOCATION_ID = process.env.LOCATION_ID
+const EMAIL = process.env.SUPABASE_SUPERADMIN_EMAIL
+const PASSWORD = process.env.SUPABASE_SUPERADMIN_PASSWORD
 // ==========================================================================
 
 const HEADERS = {
@@ -22,6 +24,18 @@ const HEADERS = {
 }
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+
+const { error } = await supabase.auth.signInWithPassword({
+  email: EMAIL,
+  password: PASSWORD
+})
+
+console.log('logging in: ', data)
+
+if (error) {
+  console.error('Error authenticating user: ', error)
+  process.exit(0)
+}
 
 //Database Request
 const getOpportunityExtraInfo = async ({ rating, stage, publisher }) => {
@@ -136,7 +150,7 @@ const createGhlNote = async (payload, contactId) => {
 
 //get contact in supabase
 
-const SUPABASE_RETURN_LIMIT = 1 //how many bulk data will be returned
+const SUPABASE_RETURN_LIMIT = 99 //how many bulk data will be returned
 let supabase_bulk_data
 try {
   supabase_bulk_data = await getContactBulkData({
@@ -240,6 +254,7 @@ for (const supabase_contact of supabase_bulk_data) {
     contact_payload_error = contact_payload
 
     console.log(util.inspect(contact_payload, false, null, true))
+
     //check the values
     if (supabase_contact.opt_out_of_email) {
       contact_payload['dndSettings'] = {
@@ -310,12 +325,14 @@ for (const supabase_contact of supabase_bulk_data) {
       (contact_response.message =
         'This location does not allow duplicated contacts.')
     ) {
-      await supabase.rpc('mark_fact_contact_duplicate', {
+      await supabase.rpc('contact_only_mark_fact_contact_duplicate', {
         p_fact_id: current_fact_id
       })
     }
     i++
     continue
+  } finally {
+    await supabase.auth.signOut()
   }
 }
 

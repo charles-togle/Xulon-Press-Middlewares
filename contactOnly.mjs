@@ -119,8 +119,10 @@ const getCustomContactFields = async () => {
   return cleanedData
 }
 
+let dailyRemaining
+let dailyLimit
 //GHL API REQUESTS
-const createGhlContact = async payload => {
+const createGhlContact = async (payload, getResponseHeaders) => {
   const URL = `${BASE_URL}/contacts`
 
   const response = await fetch(URL, {
@@ -128,6 +130,20 @@ const createGhlContact = async payload => {
     headers: HEADERS,
     method: 'POST'
   })
+
+  if (getResponseHeaders) {
+    dailyRemaining = response.headers.get('X-RateLimit-Daily-Remaining')
+    dailyLimit = response.headers.get('X-RateLimit-Limit-Daily')
+  }
+
+  console.log(
+    'remaining number of requests in the current 10s time interval: ',
+    response.headers.get('X-RateLimit-Remaining')
+  )
+  console.log(
+    'Time interval for burst requests: ',
+    response.headers.get('X-RateLimit-Interval-Milliseconds')
+  )
 
   const contactInfo = await response.json()
   return contactInfo
@@ -332,7 +348,8 @@ for (const supabase_contact of supabase_bulk_data) {
     i++
     continue
   } finally {
-    await supabase.auth.signOut()
+    supabase.auth.signOut
+    console.log(`Daily Remaining Limit: ${dailyRemaining}/${dailyLimit}`)
   }
 }
 

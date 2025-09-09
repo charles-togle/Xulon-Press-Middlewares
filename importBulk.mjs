@@ -30,12 +30,10 @@ const { error } = await supabase.auth.signInWithPassword({
   password: PASSWORD
 })
 
-
 if (error) {
   console.error('Error authenticating user: ', error)
   process.exit(0)
 }
-
 
 //Database Request
 const getOpportunityExtraInfo = async ({ rating, stage, publisher }) => {
@@ -146,7 +144,10 @@ const createGhlContact = async payload => {
   return contactInfo
 }
 
-const createGhlOpportunity = async payload => {
+let dailyRemaining
+let dailyLimit
+
+const createGhlOpportunity = async (payload, getResponseHeaders) => {
   const URL = `${BASE_URL}/opportunities/`
 
   const response = await fetch(URL, {
@@ -154,6 +155,20 @@ const createGhlOpportunity = async payload => {
     headers: HEADERS,
     method: 'POST'
   })
+
+  if (getResponseHeaders) {
+    dailyRemaining = response.headers.get('X-RateLimit-Daily-Remaining')
+    dailyLimit = response.headers.get('X-RateLimit-Limit-Daily')
+  }
+
+  console.log(
+    'remaining number of requests in the current 10s time interval: ',
+    response.headers.get('X-RateLimit-Remaining')
+  )
+  console.log(
+    'Time interval for burst requests: ',
+    response.headers.get('X-RateLimit-Interval-Milliseconds')
+  )
 
   const opportunity_info = await response.json()
   return opportunity_info
@@ -396,7 +411,10 @@ for (const supabase_contact of supabase_bulk_data) {
       source: supabase_contact.source ?? 'Unprovided'
     }
 
-    const opportunityData = await createGhlOpportunity(opportunity_payload)
+    const opportunityData = await createGhlOpportunity(
+      opportunity_payload,
+      i >= supabase_bulk_data.length
+    )
     opportunity_response = opportunityData
 
     const opportunityId = opportunityData.opportunity.id
@@ -434,6 +452,9 @@ for (const supabase_contact of supabase_bulk_data) {
     }
     i++
     continue
+  }finally{
+    supabase.auth.signOut
+    console.log(`Daily Remaining Limit: ${dailyRemaining}/${dailyLimit}` )
   }
 }
 

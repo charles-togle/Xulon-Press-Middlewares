@@ -29,7 +29,7 @@ const { error } = await supabase.auth.signInWithPassword({
   email: EMAIL,
   password: PASSWORD
 })
-
+console.log('logging in...')
 if (error) {
   console.error('Error authenticating user: ', error)
   process.exit(0)
@@ -140,6 +140,15 @@ const createGhlContact = async payload => {
     method: 'POST'
   })
 
+  console.log(
+    'remaining number of requests in the current 10s time interval: ',
+    response.headers.get('X-RateLimit-Remaining')
+  )
+  console.log(
+    'Time interval for burst requests: ',
+    response.headers.get('X-RateLimit-Interval-Milliseconds')
+  )
+
   const contactInfo = await response.json()
   return contactInfo
 }
@@ -169,7 +178,6 @@ const createGhlOpportunity = async (payload, getResponseHeaders) => {
     'Time interval for burst requests: ',
     response.headers.get('X-RateLimit-Interval-Milliseconds')
   )
-
   const opportunity_info = await response.json()
   return opportunity_info
 }
@@ -183,8 +191,16 @@ const createGhlNote = async (payload, contactId) => {
     method: 'POST'
   })
 
-  const opportunity_info = await response.json()
-  return opportunity_info
+  console.log(
+    'remaining number of requests in the current 10s time interval: ',
+    response.headers.get('X-RateLimit-Remaining')
+  )
+  console.log(
+    'Time interval for burst requests: ',
+    response.headers.get('X-RateLimit-Interval-Milliseconds')
+  )
+  const note_info = await response.json()
+  return note_info_info
 }
 
 //PROCESS
@@ -452,9 +468,9 @@ for (const supabase_contact of supabase_bulk_data) {
     }
     i++
     continue
-  }finally{
+  } finally {
     supabase.auth.signOut
-    console.log(`Daily Remaining Limit: ${dailyRemaining}/${dailyLimit}` )
+    console.log(`Daily Remaining Limit: ${dailyRemaining}/${dailyLimit}`)
   }
 }
 

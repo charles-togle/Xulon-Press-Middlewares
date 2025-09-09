@@ -30,7 +30,7 @@ const { error } = await supabase.auth.signInWithPassword({
   password: PASSWORD
 })
 
-console.log('logging in: ', data)
+console.log('logging in...')
 
 if (error) {
   console.error('Error authenticating user: ', error)
@@ -158,6 +158,15 @@ const createGhlNote = async (payload, contactId) => {
     method: 'POST'
   })
 
+  
+  console.log(
+    'remaining number of requests in the current 10s time interval: ',
+    response.headers.get('X-RateLimit-Remaining')
+  )
+  console.log(
+    'Time interval for burst requests: ',
+    response.headers.get('X-RateLimit-Interval-Milliseconds')
+  )
   const note_info = await response.json()
   return note_info
 }

@@ -12,6 +12,8 @@ const BASE_URL = process.env.BASE_URL
 const API_VERSION = process.env.API_VERSION
 const TOKEN = process.env.TOKEN
 const LOCATION_ID = process.env.LOCATION_ID
+const EMAIL = process.env.SUPABASE_SUPERADMIN_EMAIL
+const PASSWORD = process.env.SUPABASE_SUPERADMIN_PASSWORD
 // ==========================================================================
 
 const HEADERS = {
@@ -22,6 +24,16 @@ const HEADERS = {
 }
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+
+const { loginError: error } = await supabase.auth.signInWithPassword({
+  email: EMAIL,
+  password: PASSWORD
+})
+
+if (loginError) {
+  console.error('Error authenticating user: ', error)
+  process.exit(0)
+}
 
 //Database Request
 const getOpportunityExtraInfo = async ({ rating, stage, publisher }) => {

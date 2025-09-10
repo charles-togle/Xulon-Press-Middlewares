@@ -7,7 +7,7 @@ import readline from 'readline'
 import util from 'util'
 dotenv.config()
 
-//=====SECRETS===============================================================
+//===== SECRETS =====
 const SUPABASE_URL = process.env.SUPABASE_URL
 const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY
 const BASE_URL = process.env.BASE_URL
@@ -16,7 +16,7 @@ const TOKEN = process.env.TOKEN
 const LOCATION_ID = process.env.LOCATION_ID
 const EMAIL = process.env.SUPABASE_SUPERADMIN_EMAIL
 const PASSWORD = process.env.SUPABASE_SUPERADMIN_PASSWORD
-// ==========================================================================
+// ===================
 
 const HEADERS = {
   Authorization: `Bearer ${TOKEN}`,
@@ -27,18 +27,18 @@ const HEADERS = {
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
-// sign in
-const { error } = await supabase.auth.signInWithPassword({
+// ---- Auth ----
+const { error: authError } = await supabase.auth.signInWithPassword({
   email: EMAIL,
   password: PASSWORD
 })
 console.log('logging in...')
-if (error) {
-  console.error('Error authenticating user: ', error)
+if (authError) {
+  console.error('Error authenticating user: ', authError)
   process.exit(0)
 }
 
-// ===== Burst limiter =====
+// ===== Burst limiter (100 req / 10s) =====
 const BURST_MAX = 100
 const BURST_WINDOW = 10_000
 let timestamps = []
@@ -57,7 +57,7 @@ async function ghlFetch(url, opts) {
   return fetch(url, opts)
 }
 
-// ===== Helpers =====
+// ===== Prompt for limit (number or "all") =====
 async function askLimit() {
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout })
   const question = (q) => new Promise(res => rl.question(q, res))
@@ -68,7 +68,7 @@ async function askLimit() {
   return Number.isFinite(n) && n > 0 ? n : 1000
 }
 
-// ===== Database Request =====
+// ===== DB helpers =====
 const getOpportunityExtraInfo = async ({ rating, stage, publisher }) => {
   const { data, error } = await supabase.rpc(
     'get_pipeline_stage_and_do_round_robin',
@@ -78,14 +78,34 @@ const getOpportunityExtraInfo = async ({ rating, stage, publisher }) => {
   return data[0]
 }
 
+// Client-side pagination beyond 1000 rows per response
 const getContactBulkData = async ({ limit }) => {
-  let q = supabase.rpc('get_unassigned_contact_details', {
-    p_limit: limit ?? 1000000
-  })
-  if (limit) q = q.range(0, limit - 1)
-  const { data, error } = await q
-  if (error) throw error
-  return data
+  const CHUNK = Number(process.env.SUPABASE_CHUNK_SIZE ?? 1000)
+  const rows = []
+  let start = 0
+  let remaining = Number.isFinite(limit) ? limit : Infinity
+
+  for (;;) {
+    const pageSize = Math.min(CHUNK, remaining)
+    const end = start + pageSize - 1
+    let q = supabase
+      .rpc('get_unassigned_contact_details', { p_limit: 1_000_000 })
+      .range(start, end)
+
+    const { data, error } = await q
+    if (error) throw error
+    if (!data || data.length === 0) break
+
+    rows.push(...data)
+
+    if (Number.isFinite(limit) && rows.length >= limit) break
+    if (data.length < pageSize) break
+
+    start += data.length
+    remaining = Number.isFinite(limit) ? (limit - rows.length) : Infinity
+  }
+
+  return Number.isFinite(limit) ? rows.slice(0, limit) : rows
 }
 
 const updateFactContactTable = async ({ uuid, contactId, assignedUserId, number }) => {
@@ -98,43 +118,86 @@ const updateFactContactTable = async ({ uuid, contactId, assignedUserId, number 
   return `Contact #${number}: Successfully imported contact ${uuid} to go high level`
 }
 
-// ===== GHL API =====
-let dailyRemaining
-let dailyLimit
+// ===== Note sanitizers =====
+const NOTE_MAX = 65000
+function toSafeString(x) {
+  if (typeof x !== 'string') return ''
+  const s = x.replace(/\0/g, '').trim()
+  return s
+}
+function truncateNote(s) {
+  return s.length > NOTE_MAX ? s.slice(0, NOTE_MAX - 1) : s
+}
+function buildEinsteinBody(url) {
+  const base = 'Proposal Link:'
+  const val = toSafeString(url)
+  const body = val ? `${base}\n\n${val}` : `${base} N/A`
+  return truncateNote(body)
+}
+function buildOptionalNoteBody(notes) {
+  const body = truncateNote(toSafeString(notes))
+  return body // may be ''
+}
+
+// ===== GHL API with hardened error handling =====
+let lastWindowRemaining = null
+let lastDailyRemaining = null
+let lastDailyLimit = null
+
+function captureRateHeaders(res) {
+  lastWindowRemaining = res.headers.get('X-RateLimit-Remaining')
+  lastDailyRemaining = res.headers.get('X-RateLimit-Daily-Remaining')
+  lastDailyLimit = res.headers.get('X-RateLimit-Limit-Daily')
+}
 
 const createGhlContact = async payload => {
   const URL = `${BASE_URL}/contacts`
-  const response = await ghlFetch(URL, {
+  const res = await ghlFetch(URL, {
     body: JSON.stringify(payload),
     headers: HEADERS,
     method: 'POST'
   })
-  console.log(`[RateLimit] Window remaining: ${response.headers.get('X-RateLimit-Remaining')}`)
-  const contactInfo = await response.json()
-  return contactInfo
+  const bodyText = await res.text()
+  captureRateHeaders(res)
+  if (!res.ok) throw new Error(`Create contact failed ${res.status} ${res.statusText}: ${bodyText}`)
+  let json
+  try { json = JSON.parse(bodyText) } catch { throw new Error(`Create contact returned non-JSON: ${bodyText}`) }
+  if (!json?.contact?.id) throw new Error(`Create contact missing id: ${bodyText}`)
+  return json
 }
 
 const createGhlNote = async (payload, contactId) => {
   const URL = `${BASE_URL}/contacts/${contactId}/notes/`
-  const response = await ghlFetch(URL, {
+  const res = await ghlFetch(URL, {
     body: JSON.stringify(payload),
     headers: HEADERS,
     method: 'POST'
   })
-  dailyRemaining = response.headers.get('X-RateLimit-Daily-Remaining')
-  dailyLimit = response.headers.get('X-RateLimit-Limit-Daily')
-  console.log(`[RateLimit] Window remaining: ${response.headers.get('X-RateLimit-Remaining')}`)
-  const note_info = await response.json()
-  return note_info
+  const bodyText = await res.text()
+  captureRateHeaders(res)
+  if (!res.ok) throw new Error(`Create note failed ${res.status} ${res.statusText}: ${bodyText}`)
+  try { return JSON.parse(bodyText) } catch { throw new Error(`Create note returned non-JSON: ${bodyText}`) }
+}
+
+// ---- Logging helpers (logging only) ----
+const VERBOSE_ERRORS = process.env.VERBOSE_ERRORS === '1'
+function briefErrorMessage(e, max = 180) {
+  const m = String(e?.message || e || '')
+  const one = m.replace(/\s+/g, ' ').trim()
+  return one.length > max ? one.slice(0, max) + '…' : one
+}
+function isDuplicateError(e) {
+  return /\bduplicated contacts\b/i.test(String(e?.message || e || ''))
 }
 
 // ===== PROCESS =====
 const chosenLimit = await askLimit()
+
 let supabase_bulk_data
 try {
   supabase_bulk_data = await getContactBulkData({ limit: chosenLimit })
-} catch (err) {
-  console.error('Error fetching bulk contact data from Supabase:', err)
+} catch (error) {
+  console.error('Error fetching bulk contact data from Supabase:', error)
   process.exit(1)
 }
 
@@ -143,6 +206,7 @@ if (!Array.isArray(supabase_bulk_data) || supabase_bulk_data.length === 0) {
   process.exit(0)
 }
 
+const total = supabase_bulk_data.length
 let i = 1
 let processedOk = 0
 let processedFail = 0
@@ -157,7 +221,9 @@ for (const supabase_contact of supabase_bulk_data) {
       supabase_contact.ghl_contact_id === 'DUPLICATE' &&
       supabase_contact.ghl_opportunity_id === 'DUPLICATE'
     ) {
-      console.log(`Contact #${i} is a duplicate: ${supabase_contact.first_name} ${supabase_contact.last_name}`)
+      const left = total - i
+      console.log(`[SKIP] #${i}/${total} duplicate fact_id=${supabase_contact.fact_id} left=${left}`)
+      i++
       continue
     }
 
@@ -170,9 +236,9 @@ for (const supabase_contact of supabase_bulk_data) {
 
     const contact_custom_fields = [
       { id: 'AMgJg4wIu7GKV02OGxD3', key: 'publisher', field_value: supabase_contact.publisher },
-      { id: 'fFWUJ9OFbYBqVJjwjQGP', key: 'timezone_c', field_value: supabase_contact.time_zone ?? 'Unprovided' },
+      { id: 'fFWUJ9OFbYqVJjwjQGP', key: 'timezone_c', field_value: supabase_contact.time_zone ?? 'Unprovided' },
       { id: 'ZXykBROLtnEh5A5vaT2B', key: 'active_campaigns_c', field_value: [] },
-      { id: 'IjmRpmQlwHiJjGnTLptG', key: 'contact_source_detail', field_value: supabase_contact.lead_source || 'Unprovided' },
+      { id: 'IjmRpmQlwHiJjGnTLptG', key: 'contact_source_detail', field_value: supabase_contact.lead_source === '' ? 'Unprovided' : supabase_contact.lead_source },
       { id: 'JMwy9JsVRTTzg4PDQnhk', key: 'source_detail_value_c', field_value: supabase_contact.website_landing_page ?? 'Unprovided' }
     ]
 
@@ -199,7 +265,9 @@ for (const supabase_contact of supabase_bulk_data) {
       Email: { status: supabase_contact.opt_out_of_email ? 'active' : 'inactive', message: '', code: '' }
     }
     if (supabase_contact.email && supabase_contact.email !== 'Unprovided') contact_payload['email'] = supabase_contact.email
-    if (supabase_contact.phone_number && supabase_contact.phone_number !== 'Unprovided') contact_payload['phone'] = supabase_contact.phone_number
+    if (supabase_contact.phone_number && supabase_contact.phone_number !== 'Unprovided') {
+      contact_payload['phone'] = String(supabase_contact.phone_number).replace(/[^\d+]/g, '')
+    }
 
     let contact_id = supabase_contact.contact_id
     if (!contact_id) {
@@ -208,38 +276,64 @@ for (const supabase_contact of supabase_bulk_data) {
       contact_id = contactResponseData.contact.id
     }
 
-    const einstein_notes_payload = { userId: 'JERtBepiajyLX1Pghv3T', body: `Proposal Link: \n\n ${supabase_contact.einstein_url}` }
-    if (!supabase_contact.notes || supabase_contact.notes === 'Unprovided') {
-      const notes_payload = { userId: 'JERtBepiajyLX1Pghv3T', body: supabase_contact.notes }
-      await createGhlNote(notes_payload, contact_id)
-    }
-    await createGhlNote(einstein_notes_payload, contact_id)
+    // --- Notes ---
+    const einsteinBody = buildEinsteinBody(supabase_contact.einstein_url)
+    await createGhlNote({ userId: 'JERtBepiajyLX1Pghv3T', body: einsteinBody }, contact_id)
 
-    console.log(await updateFactContactTable({
-      uuid: supabase_contact.fact_id,
-      assignedUserId: assigned_user_id,
-      contactId: contact_id,
-      number: i
-    }))
+    const optionalBody = buildOptionalNoteBody(supabase_contact.notes)
+    if (optionalBody) {
+      await createGhlNote({ userId: 'JERtBepiajyLX1Pghv3T', body: optionalBody }, contact_id)
+    }
+
+    // success log
     processedOk++
-  } catch (err) {
+    const left = total - i
+    console.log(
+      `[OK] #${i}/${total} fact_id=${supabase_contact.fact_id} left=${left} ` +
+      `window_rem=${lastWindowRemaining} daily=${lastDailyRemaining ?? 'n/a'}/${lastDailyLimit ?? 'n/a'}`
+    )
+
+    // Supabase update
+    console.log(
+      await updateFactContactTable({
+        uuid: supabase_contact.fact_id,
+        assignedUserId: assigned_user_id,
+        contactId: contact_id,
+        number: i
+      })
+    )
+
+  } catch (error) {
     processedFail++
-    console.error(`Contact #${i}: Error processing ${supabase_contact?.fact_id ?? 'unknown'}:`, err)
-    console.log(contact_payload_error)
+    const left = total - i
+    if (isDuplicateError(error)) {
+      console.warn(
+        `[DUP] #${i}/${total} left=${left} :: duplicate found: ${supabase_contact.first_name} ${supabase_contact.last_name} (${supabase_contact.email}), skipping`
+      )
+    } else {
+      console.error(
+        `[ERR] #${i}/${total} fact_id=${supabase_contact?.fact_id ?? 'unknown'} left=${left} :: ${briefErrorMessage(error)}`
+      )
+      if (VERBOSE_ERRORS) console.log('payload=', contact_payload_error)
+    }
     if (contact_response?.message === 'This location does not allow duplicated contacts.') {
-      await supabase.rpc('contact_only_mark_fact_contact_duplicate', { p_fact_id: current_fact_id })
+      try {
+        await supabase.rpc('contact_only_mark_fact_contact_duplicate', { p_fact_id: current_fact_id })
+      } catch (e) {
+        console.error('[ERR] failed to mark duplicate in Supabase:', e?.message || e)
+      }
     }
   } finally {
     if (i % 100 === 0) {
-      console.log(`[Progress] ${i}/${supabase_bulk_data.length} | OK=${processedOk} FAIL=${processedFail}`)
-      console.log(`Daily Remaining: ${dailyRemaining}/${dailyLimit}`)
+      console.log(`[PROG] ${i}/${total} processed | ok=${processedOk} fail=${processedFail} ` +
+                  `window_rem=${lastWindowRemaining} daily=${lastDailyRemaining ?? 'n/a'}/${lastDailyLimit ?? 'n/a'}`)
     }
     i++
   }
 }
 
-// ===== End =====
 await supabase.auth.signOut?.()
 const end = performance.now()
-console.log(`Finished: ${supabase_bulk_data.length} total | OK=${processedOk} | Failed=${processedFail}`)
-console.log(`Execution time: ${Math.round(end - start)} ms`)
+console.log(`[DONE] total=${total} ok=${processedOk} fail=${processedFail} ` +
+            `elapsed_ms=${Math.round(end - start)} window_rem=${lastWindowRemaining} ` +
+            `daily=${lastDailyRemaining ?? 'n/a'}/${lastDailyLimit ?? 'n/a'}`)

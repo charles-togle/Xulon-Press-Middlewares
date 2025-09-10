@@ -1,13 +1,12 @@
-//analytics
+// analytics
 const start = performance.now()
 
 import { createClient } from '@supabase/supabase-js'
 import dotenv from 'dotenv'
 import readline from 'readline'
-import util from 'util'
 dotenv.config()
 
-//===== SECRETS =====
+// ===== SECRETS =====
 const SUPABASE_URL = process.env.SUPABASE_URL
 const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY
 const BASE_URL = process.env.BASE_URL
@@ -25,14 +24,17 @@ const HEADERS = {
   Version: API_VERSION
 }
 
+const VERBOSE_ERRORS = process.env.VERBOSE_ERRORS === '1'
+const SUPABASE_CHUNK_SIZE = Number(process.env.SUPABASE_CHUNK_SIZE ?? 5000) // per-page rows
+
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
 // ---- Auth ----
+console.log('logging in...')
 const { error: authError } = await supabase.auth.signInWithPassword({
   email: EMAIL,
   password: PASSWORD
 })
-console.log('logging in...')
 if (authError) {
   console.error('Error authenticating user: ', authError)
   process.exit(0)
@@ -78,30 +80,27 @@ const getOpportunityExtraInfo = async ({ rating, stage, publisher }) => {
   return data[0]
 }
 
-// Client-side pagination beyond 1000 rows per response
+// ===== Server-side paginated fetch via new RPC =====
+// Expects: public.get_unassigned_contact_details_page(p_offset integer, p_limit integer)
 const getContactBulkData = async ({ limit }) => {
-  const CHUNK = Number(process.env.SUPABASE_CHUNK_SIZE ?? 1000)
   const rows = []
-  let start = 0
+  let offset = 0
   let remaining = Number.isFinite(limit) ? limit : Infinity
 
   for (;;) {
-    const pageSize = Math.min(CHUNK, remaining)
-    const end = start + pageSize - 1
-    let q = supabase
-      .rpc('get_unassigned_contact_details', { p_limit: 1_000_000 })
-      .range(start, end)
-
-    const { data, error } = await q
+    const take = Math.min(SUPABASE_CHUNK_SIZE, remaining)
+    console.log(`[FETCH] rpc offset=${offset} limit=${take}`)
+    const { data, error } = await supabase.rpc(
+      'get_unassigned_contact_details_page',
+      { p_offset: offset, p_limit: take }
+    )
     if (error) throw error
-    if (!data || data.length === 0) break
+    if (!data?.length) break
 
     rows.push(...data)
-
     if (Number.isFinite(limit) && rows.length >= limit) break
-    if (data.length < pageSize) break
 
-    start += data.length
+    offset += data.length
     remaining = Number.isFinite(limit) ? (limit - rows.length) : Infinity
   }
 
@@ -122,8 +121,7 @@ const updateFactContactTable = async ({ uuid, contactId, assignedUserId, number 
 const NOTE_MAX = 65000
 function toSafeString(x) {
   if (typeof x !== 'string') return ''
-  const s = x.replace(/\0/g, '').trim()
-  return s
+  return x.replace(/\0/g, '').trim()
 }
 function truncateNote(s) {
   return s.length > NOTE_MAX ? s.slice(0, NOTE_MAX - 1) : s
@@ -131,12 +129,10 @@ function truncateNote(s) {
 function buildEinsteinBody(url) {
   const base = 'Proposal Link:'
   const val = toSafeString(url)
-  const body = val ? `${base}\n\n${val}` : `${base} N/A`
-  return truncateNote(body)
+  return truncateNote(val ? `${base}\n\n${val}` : `${base} N/A`)
 }
 function buildOptionalNoteBody(notes) {
-  const body = truncateNote(toSafeString(notes))
-  return body // may be ''
+  return truncateNote(toSafeString(notes))
 }
 
 // ===== GHL API with hardened error handling =====
@@ -180,7 +176,6 @@ const createGhlNote = async (payload, contactId) => {
 }
 
 // ---- Logging helpers (logging only) ----
-const VERBOSE_ERRORS = process.env.VERBOSE_ERRORS === '1'
 function briefErrorMessage(e, max = 180) {
   const m = String(e?.message || e || '')
   const one = m.replace(/\s+/g, ' ').trim()
@@ -193,6 +188,7 @@ function isDuplicateError(e) {
 // ===== PROCESS =====
 const chosenLimit = await askLimit()
 
+console.log('starting bulk fetch…')
 let supabase_bulk_data
 try {
   supabase_bulk_data = await getContactBulkData({ limit: chosenLimit })
@@ -200,6 +196,7 @@ try {
   console.error('Error fetching bulk contact data from Supabase:', error)
   process.exit(1)
 }
+console.log(`fetched ${supabase_bulk_data.length} records`)
 
 if (!Array.isArray(supabase_bulk_data) || supabase_bulk_data.length === 0) {
   console.log('No eligible records — every record already imported. Ending process.')
@@ -334,6 +331,8 @@ for (const supabase_contact of supabase_bulk_data) {
 
 await supabase.auth.signOut?.()
 const end = performance.now()
-console.log(`[DONE] total=${total} ok=${processedOk} fail=${processedFail} ` +
-            `elapsed_ms=${Math.round(end - start)} window_rem=${lastWindowRemaining} ` +
-            `daily=${lastDailyRemaining ?? 'n/a'}/${lastDailyLimit ?? 'n/a'}`)
+console.log(
+  `[DONE] total=${total} ok=${processedOk} fail=${processedFail} ` +
+  `elapsed_ms=${Math.round(end - start)} window_rem=${lastWindowRemaining} ` +
+  `daily=${lastDailyRemaining ?? 'n/a'}/${lastDailyLimit ?? 'n/a'}`
+)

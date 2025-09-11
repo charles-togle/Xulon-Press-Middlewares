@@ -131,8 +131,11 @@ function buildEinsteinBody(url) {
   const val = toSafeString(url)
   return truncateNote(val ? `${base}\n\n${val}` : `${base} N/A`)
 }
+// CHANGED: skip optional notes when null/empty/"Unprovided"
 function buildOptionalNoteBody(notes) {
-  return truncateNote(toSafeString(notes))
+  const s = toSafeString(notes)
+  if (!s || /^unprovided$/i.test(s)) return ''
+  return truncateNote(s)
 }
 
 // ===== GHL API with hardened error handling =====

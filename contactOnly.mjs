@@ -4,13 +4,14 @@ const start = performance.now()
 import { createClient } from '@supabase/supabase-js'
 import dotenv from 'dotenv'
 import readline from 'readline'
+import fs from 'fs'
 dotenv.config()
 
 // ===== SECRETS =====
 const SUPABASE_URL = process.env.SUPABASE_URL
 const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY
-const BASE_URL = process.env.BASE_URL
-const API_VERSION = process.env.API_VERSION
+const BASE_URL = process.env.BASE_URL || 'https://services.leadconnectorhq.com'
+const API_VERSION = process.env.API_VERSION || '2021-07-28'
 const TOKEN = process.env.TOKEN
 const LOCATION_ID = process.env.LOCATION_ID
 const EMAIL = process.env.SUPABASE_SUPERADMIN_EMAIL
@@ -21,7 +22,8 @@ const HEADERS = {
   Authorization: `Bearer ${TOKEN}`,
   'Content-Type': 'application/json',
   Accept: 'application/json',
-  Version: API_VERSION
+  Version: API_VERSION,
+  'User-Agent': 'vertexlabs-ghl-importer/1.0'
 }
 
 const VERBOSE_ERRORS = process.env.VERBOSE_ERRORS === '1'
@@ -56,6 +58,45 @@ async function rateLimit() {
   timestamps.push(now)
 }
 
+// ===== Error sink + CSV =====
+const ERRORS = []
+function parseStatus(e) {
+  const m = String(e?.message || '').match(/\b(\d{3})\b/)
+  return m ? Number(m[1]) : ''
+}
+function csvEscape(v) {
+  const s = String(v ?? '')
+  return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s
+}
+function recordError({ ts = new Date().toISOString(), idx, row, kind, error, extra }) {
+  ERRORS.push({
+    ts,
+    idx,
+    fact_id: row?.fact_id ?? '',
+    email_raw: row?.email ?? '',
+    kind,
+    status: parseStatus(error),
+    message: String(error?.message || error || ''),
+    extra: extra ?? ''
+  })
+}
+function writeErrorCsv() {
+  const name = `errors_${new Date().toISOString().replace(/[:.]/g, '-')}.csv`
+  const headers = ['ts','idx','fact_id','email_raw','kind','status','message','extra']
+  const lines = [headers.join(',')]
+  for (const o of ERRORS) lines.push(headers.map(h => csvEscape(o[h])).join(','))
+  fs.writeFileSync(name, lines.join('\n'))
+  console.log(`[ERROR CSV] wrote ${ERRORS.length} rows -> ${name}`)
+}
+process.on('SIGINT', () => {
+  console.log('\n[INTERRUPT] Writing error CSV…')
+  try { writeErrorCsv() } catch (e) { console.error(e) } finally { process.exit(1) }
+})
+process.on('SIGTERM', () => {
+  console.log('\n[TERM] Writing error CSV…')
+  try { writeErrorCsv() } catch (e) { console.error(e) } finally { process.exit(0) }
+})
+
 // ===== Rate headers (updated by ghlFetch) =====
 let lastWindowRemaining = null
 let lastDailyRemaining = null
@@ -66,17 +107,44 @@ function captureRateHeaders(res) {
   lastDailyLimit = res.headers.get('X-RateLimit-Limit-Daily')
 }
 
-// ===== 429-aware fetch =====
+// ===== URL enforcement =====
+function assertApiUrl(u) {
+  if (!/^https:\/\/services\.leadconnectorhq\.com(\/|$)/i.test(u)) {
+    throw new Error(`Invalid API url: ${u}`)
+  }
+}
+
+// ===== 429/5xx-aware fetch with HTML guard =====
 async function ghlFetch(url, opts, attempt = 0) {
+  assertApiUrl(url)
   await rateLimit()
-  const res = await fetch(url, { ...opts, headers: { ...HEADERS, ...(opts?.headers || {}) } })
+
+  const res = await fetch(url, {
+    ...opts,
+    headers: { ...HEADERS, ...(opts?.headers || {}) },
+    redirect: 'manual',
+    keepalive: true
+  })
   captureRateHeaders(res)
-  if (res.status === 429 && attempt < 5) {
+
+  const ct = res.headers.get('content-type') || ''
+  const isHtml = ct.includes('text/html')
+  if (isHtml) {
+    const body = await res.text()
+    const err = new Error(`Non-JSON HTML response ${res.status}; probable redirect/Cloudflare`)
+    recordError({ idx: -1, row: {}, kind: 'html_response', error: err, extra: body.slice(0, 200) })
+    throw err
+  }
+
+  const transient = res.status === 429 || (res.status >= 500 && res.status <= 599)
+  if (!res.ok && transient && attempt < 5) {
     const ra = Number(res.headers.get('retry-after')) || 2
-    const waitMs = Math.min(15, ra) * 1000 + Math.floor(Math.random() * 300)
-    await new Promise(r => setTimeout(r, waitMs))
+    const backoff = Math.min(15, ra * Math.pow(2, attempt)) * 1000
+    const jitter = Math.floor(Math.random() * 400)
+    await new Promise(r => setTimeout(r, backoff + jitter))
     return ghlFetch(url, opts, attempt + 1)
   }
+
   return res
 }
 
@@ -171,9 +239,24 @@ function normCountry(v) {
   return 'US'
 }
 
+// ===== Email normalizer =====
+function normalizeEmail(raw) {
+  if (typeof raw !== 'string') return null
+  let s = raw.trim().replace(/^"+|"+$/g, '').replace(/\s+/g, '')
+  s = s.replace(/\.@/, '@') // common typo fix
+  const m = s.match(/^([^@]+)@([^@]+)$/)
+  if (!m) return null
+  const local = m[1], domain = m[2]
+  if (local.startsWith('.') || local.endsWith('.')) return null
+  if (local.includes('..')) return null
+  if (!/^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+$/.test(local)) return null
+  if (!/^[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)+$/.test(domain)) return null
+  return s.toLowerCase()
+}
+
 // ===== GHL API =====
 const createGhlContact = async payload => {
-  const URL = `${BASE_URL}/contacts`
+  const URL = `${BASE_URL}/contacts/`
   const res = await ghlFetch(URL, {
     body: JSON.stringify(payload),
     headers: HEADERS,
@@ -273,7 +356,15 @@ async function processOneContact(supabase_contact, idx, total) {
       Email: { status: supabase_contact.opt_out_of_email ? 'active' : 'inactive', message: '', code: '' }
     }
   }
-  if (supabase_contact.email && supabase_contact.email !== 'Unprovided') contact_payload.email = supabase_contact.email
+
+  // email sanitation (non-breaking; only affects invalid emails)
+  const cleanedEmail = normalizeEmail(supabase_contact.email)
+  if (cleanedEmail) {
+    contact_payload.email = cleanedEmail
+  } else if (supabase_contact.email && supabase_contact.email !== 'Unprovided') {
+    recordError({ idx, row: supabase_contact, kind: 'invalid_email', error: new Error('Invalid email syntax'), extra: supabase_contact.email })
+  }
+
   if (supabase_contact.phone_number && supabase_contact.phone_number !== 'Unprovided') {
     contact_payload.phone = String(supabase_contact.phone_number).replace(/[^\d+]/g, '')
   }
@@ -353,6 +444,7 @@ await Promise.allSettled(
           try { await supabase.rpc('contact_only_mark_fact_contact_duplicate', { p_fact_id: row.fact_id }) } catch {}
         } else {
           fail++
+          recordError({ idx: i + 1, row, kind: 'api_error', error })
           console.error(`[ERR] #${i + 1}/${total} fact_id=${row?.fact_id ?? 'unknown'} :: ${briefErrorMessage(error)}`)
           if (VERBOSE_ERRORS) console.log('payload_fact_id=', row.fact_id)
         }
@@ -368,6 +460,7 @@ await Promise.allSettled(
 )
 
 await supabase.auth.signOut?.()
+writeErrorCsv()
 const end = performance.now()
 console.log(
   `[DONE] total=${total} ok=${ok} fail=${fail} dup=${dup} ` +

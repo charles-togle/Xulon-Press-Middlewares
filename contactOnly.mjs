@@ -25,7 +25,8 @@ const HEADERS = {
 }
 
 const VERBOSE_ERRORS = process.env.VERBOSE_ERRORS === '1'
-const SUPABASE_CHUNK_SIZE = Number(process.env.SUPABASE_CHUNK_SIZE ?? 5000) // per-page rows
+const SUPABASE_CHUNK_SIZE = Number(process.env.SUPABASE_CHUNK_SIZE ?? 5000)
+const CONCURRENCY = Number(process.env.CONCURRENCY ?? 12)
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
@@ -54,9 +55,29 @@ async function rateLimit() {
   }
   timestamps.push(now)
 }
-async function ghlFetch(url, opts) {
+
+// ===== Rate headers (updated by ghlFetch) =====
+let lastWindowRemaining = null
+let lastDailyRemaining = null
+let lastDailyLimit = null
+function captureRateHeaders(res) {
+  lastWindowRemaining = res.headers.get('X-RateLimit-Remaining')
+  lastDailyRemaining = res.headers.get('X-RateLimit-Daily-Remaining')
+  lastDailyLimit = res.headers.get('X-RateLimit-Limit-Daily')
+}
+
+// ===== 429-aware fetch =====
+async function ghlFetch(url, opts, attempt = 0) {
   await rateLimit()
-  return fetch(url, opts)
+  const res = await fetch(url, { ...opts, headers: { ...HEADERS, ...(opts?.headers || {}) } })
+  captureRateHeaders(res)
+  if (res.status === 429 && attempt < 5) {
+    const ra = Number(res.headers.get('retry-after')) || 2
+    const waitMs = Math.min(15, ra) * 1000 + Math.floor(Math.random() * 300)
+    await new Promise(r => setTimeout(r, waitMs))
+    return ghlFetch(url, opts, attempt + 1)
+  }
+  return res
 }
 
 // ===== Prompt for limit (number or "all") =====
@@ -81,7 +102,6 @@ const getOpportunityExtraInfo = async ({ rating, stage, publisher }) => {
 }
 
 // ===== Server-side paginated fetch via new RPC =====
-// Expects: public.get_unassigned_contact_details_page(p_offset integer, p_limit integer)
 const getContactBulkData = async ({ limit }) => {
   const rows = []
   let offset = 0
@@ -131,24 +151,27 @@ function buildEinsteinBody(url) {
   const val = toSafeString(url)
   return truncateNote(val ? `${base}\n\n${val}` : `${base} N/A`)
 }
-// CHANGED: skip optional notes when null/empty/"Unprovided"
 function buildOptionalNoteBody(notes) {
   const s = toSafeString(notes)
   if (!s || /^unprovided$/i.test(s)) return ''
   return truncateNote(s)
 }
 
-// ===== GHL API with hardened error handling =====
-let lastWindowRemaining = null
-let lastDailyRemaining = null
-let lastDailyLimit = null
-
-function captureRateHeaders(res) {
-  lastWindowRemaining = res.headers.get('X-RateLimit-Remaining')
-  lastDailyRemaining = res.headers.get('X-RateLimit-Daily-Remaining')
-  lastDailyLimit = res.headers.get('X-RateLimit-Limit-Daily')
+// ===== Country normalization + safe create =====
+function normCountry(v) {
+  const s = String(v ?? '').trim()
+  if (!s || /^unprovided$/i.test(s)) return 'US'
+  const map = {
+    'usa': 'US', 'u.s.a.': 'US', 'u.s.': 'US', 'us': 'US',
+    'united states': 'US', 'united states of america': 'US', 'america': 'US'
+  }
+  const hit = map[s.toLowerCase()]
+  if (hit) return hit
+  if (/^[A-Za-z]{2}$/.test(s)) return s.toUpperCase()
+  return 'US'
 }
 
+// ===== GHL API =====
 const createGhlContact = async payload => {
   const URL = `${BASE_URL}/contacts`
   const res = await ghlFetch(URL, {
@@ -157,12 +180,22 @@ const createGhlContact = async payload => {
     method: 'POST'
   })
   const bodyText = await res.text()
-  captureRateHeaders(res)
   if (!res.ok) throw new Error(`Create contact failed ${res.status} ${res.statusText}: ${bodyText}`)
   let json
   try { json = JSON.parse(bodyText) } catch { throw new Error(`Create contact returned non-JSON: ${bodyText}`) }
   if (!json?.contact?.id) throw new Error(`Create contact missing id: ${bodyText}`)
   return json
+}
+
+async function createGhlContactSafe(payload) {
+  try {
+    return await createGhlContact(payload)
+  } catch (e) {
+    if (/country must be valid/i.test(String(e?.message || e || '')) && payload.country !== 'US') {
+      return await createGhlContact({ ...payload, country: 'US' })
+    }
+    throw e
+  }
 }
 
 const createGhlNote = async (payload, contactId) => {
@@ -173,12 +206,11 @@ const createGhlNote = async (payload, contactId) => {
     method: 'POST'
   })
   const bodyText = await res.text()
-  captureRateHeaders(res)
   if (!res.ok) throw new Error(`Create note failed ${res.status} ${res.statusText}: ${bodyText}`)
   try { return JSON.parse(bodyText) } catch { throw new Error(`Create note returned non-JSON: ${bodyText}`) }
 }
 
-// ---- Logging helpers (logging only) ----
+// ---- Logging helpers ----
 function briefErrorMessage(e, max = 180) {
   const m = String(e?.message || e || '')
   const one = m.replace(/\s+/g, ' ').trim()
@@ -186,6 +218,97 @@ function briefErrorMessage(e, max = 180) {
 }
 function isDuplicateError(e) {
   return /\bduplicated contacts\b/i.test(String(e?.message || e || ''))
+}
+
+// ===== Concurrency semaphore =====
+function createSemaphore(max) {
+  let active = 0, queue = []
+  const run = () => {
+    if (active >= max || !queue.length) return
+    active++
+    const { fn, resolve, reject } = queue.shift()
+    Promise.resolve()
+      .then(fn)
+      .then(v => { active--; resolve(v); run() },
+            e => { active--; reject(e); run() })
+  }
+  return fn => new Promise((resolve, reject) => { queue.push({ fn, resolve, reject }); run() })
+}
+const schedule = createSemaphore(CONCURRENCY)
+
+// ===== Per-contact task =====
+async function processOneContact(supabase_contact, idx, total) {
+  let { assigned_user_id } = await getOpportunityExtraInfo({
+    rating: '1. Hot',
+    stage: 'Proposal Sent',
+    publisher: supabase_contact.publisher ?? ' '
+  })
+  assigned_user_id = supabase_contact.lead_owner || assigned_user_id
+
+  const contact_custom_fields = [
+    { id: 'AMgJg4wIu7GKV02OGxD3', key: 'publisher', field_value: supabase_contact.publisher },
+    { id: 'fFWUJ9OFbYqVJjwjQGP', key: 'timezone_c', field_value: supabase_contact.time_zone ?? 'Unprovided' },
+    { id: 'ZXykBROLtnEh5A5vaT2B', key: 'active_campaigns_c', field_value: [] },
+    { id: 'IjmRpmQlwHiJjGnTLptG', key: 'contact_source_detail', field_value: supabase_contact.lead_source === '' ? 'Unprovided' : supabase_contact.lead_source },
+    { id: 'JMwy9JsVRTTzg4PDQnhk', key: 'source_detail_value_c', field_value: supabase_contact.website_landing_page ?? 'Unprovided' }
+  ]
+
+  let contact_payload = {
+    firstName: supabase_contact.first_name ?? 'Unprovided',
+    lastName: supabase_contact.last_name ?? 'Unprovided',
+    name: `${supabase_contact.first_name} ${supabase_contact.last_name}` ?? 'Unprovided',
+    locationId: `${LOCATION_ID}`,
+    address1: supabase_contact.address_line1 ?? 'Unprovided',
+    city: supabase_contact.city ?? 'Unprovided',
+    state: supabase_contact.state_region ?? 'Unprovided',
+    postalCode: supabase_contact.postal_code ?? 'Unprovided',
+    website: supabase_contact.website_landing_page ?? 'Unprovided',
+    timezone: supabase_contact.time_zone ?? 'Unprovided',
+    dnd: supabase_contact.opt_out_of_email ?? false,
+    customFields: contact_custom_fields,
+    source: supabase_contact.source ?? 'Unprovided',
+    country: normCountry(supabase_contact.country),
+    assignedTo: assigned_user_id,
+    dndSettings: {
+      Email: { status: supabase_contact.opt_out_of_email ? 'active' : 'inactive', message: '', code: '' }
+    }
+  }
+  if (supabase_contact.email && supabase_contact.email !== 'Unprovided') contact_payload.email = supabase_contact.email
+  if (supabase_contact.phone_number && supabase_contact.phone_number !== 'Unprovided') {
+    contact_payload.phone = String(supabase_contact.phone_number).replace(/[^\d+]/g, '')
+  }
+
+  // create or reuse id
+  let contact_id = supabase_contact.contact_id
+  if (!contact_id) {
+    const contactResponseData = await createGhlContactSafe(contact_payload)
+    contact_id = contactResponseData.contact.id
+  }
+
+  // notes: sequential per contact
+  const einsteinBody = buildEinsteinBody(supabase_contact.einstein_url) // always posts (N/A if empty)
+  await createGhlNote({ userId: 'JERtBepiajyLX1Pghv3T', body: einsteinBody }, contact_id)
+
+  const optionalBody = buildOptionalNoteBody(supabase_contact.notes)
+  if (optionalBody) {
+    await createGhlNote({ userId: 'JERtBepiajyLX1Pghv3T', body: optionalBody }, contact_id)
+  }
+
+  // Supabase update
+  console.log(
+    await updateFactContactTable({
+      uuid: supabase_contact.fact_id,
+      assignedUserId: assigned_user_id,
+      contactId: contact_id,
+      number: idx
+    })
+  )
+
+  const left = total - idx
+  console.log(
+    `[OK] #${idx}/${total} fact_id=${supabase_contact.fact_id} left=${left} ` +
+    `window_rem=${lastWindowRemaining} daily=${lastDailyRemaining ?? 'n/a'}/${lastDailyLimit ?? 'n/a'}`
+  )
 }
 
 // ===== PROCESS =====
@@ -207,135 +330,47 @@ if (!Array.isArray(supabase_bulk_data) || supabase_bulk_data.length === 0) {
 }
 
 const total = supabase_bulk_data.length
-let i = 1
-let processedOk = 0
-let processedFail = 0
-let contact_response
-let contact_payload_error
-let current_fact_id
+let ok = 0, fail = 0, dup = 0
 
-for (const supabase_contact of supabase_bulk_data) {
-  try {
-    current_fact_id = supabase_contact.fact_id
-    if (
-      supabase_contact.ghl_contact_id === 'DUPLICATE' &&
-      supabase_contact.ghl_opportunity_id === 'DUPLICATE'
-    ) {
-      const left = total - i
-      console.log(`[SKIP] #${i}/${total} duplicate fact_id=${supabase_contact.fact_id} left=${left}`)
-      i++
-      continue
-    }
-
-    let { assigned_user_id } = await getOpportunityExtraInfo({
-      rating: '1. Hot',
-      stage: 'Proposal Sent',
-      publisher: supabase_contact.publisher ?? ' '
-    })
-    assigned_user_id = supabase_contact.lead_owner || assigned_user_id
-
-    const contact_custom_fields = [
-      { id: 'AMgJg4wIu7GKV02OGxD3', key: 'publisher', field_value: supabase_contact.publisher },
-      { id: 'fFWUJ9OFbYqVJjwjQGP', key: 'timezone_c', field_value: supabase_contact.time_zone ?? 'Unprovided' },
-      { id: 'ZXykBROLtnEh5A5vaT2B', key: 'active_campaigns_c', field_value: [] },
-      { id: 'IjmRpmQlwHiJjGnTLptG', key: 'contact_source_detail', field_value: supabase_contact.lead_source === '' ? 'Unprovided' : supabase_contact.lead_source },
-      { id: 'JMwy9JsVRTTzg4PDQnhk', key: 'source_detail_value_c', field_value: supabase_contact.website_landing_page ?? 'Unprovided' }
-    ]
-
-    let contact_payload = {
-      firstName: supabase_contact.first_name ?? 'Unprovided',
-      lastName: supabase_contact.last_name ?? 'Unprovided',
-      name: `${supabase_contact.first_name} ${supabase_contact.last_name}` ?? 'Unprovided',
-      locationId: `${LOCATION_ID}`,
-      address1: supabase_contact.address_line1 ?? 'Unprovided',
-      city: supabase_contact.city ?? 'Unprovided',
-      state: supabase_contact.state_region ?? 'Unprovided',
-      postalCode: supabase_contact.postal_code ?? 'Unprovided',
-      website: supabase_contact.website_landing_page ?? 'Unprovided',
-      timezone: supabase_contact.time_zone ?? 'Unprovided',
-      dnd: supabase_contact.opt_out_of_email ?? false,
-      customFields: contact_custom_fields,
-      source: supabase_contact.source ?? 'Unprovided',
-      country: (!supabase_contact.country || supabase_contact.country === 'Unprovided') ? 'US' : supabase_contact.country,
-      assignedTo: assigned_user_id
-    }
-    contact_payload_error = contact_payload
-
-    contact_payload['dndSettings'] = {
-      Email: { status: supabase_contact.opt_out_of_email ? 'active' : 'inactive', message: '', code: '' }
-    }
-    if (supabase_contact.email && supabase_contact.email !== 'Unprovided') contact_payload['email'] = supabase_contact.email
-    if (supabase_contact.phone_number && supabase_contact.phone_number !== 'Unprovided') {
-      contact_payload['phone'] = String(supabase_contact.phone_number).replace(/[^\d+]/g, '')
-    }
-
-    let contact_id = supabase_contact.contact_id
-    if (!contact_id) {
-      const contactResponseData = await createGhlContact(contact_payload)
-      contact_response = contactResponseData
-      contact_id = contactResponseData.contact.id
-    }
-
-    // --- Notes ---
-    const einsteinBody = buildEinsteinBody(supabase_contact.einstein_url)
-    await createGhlNote({ userId: 'JERtBepiajyLX1Pghv3T', body: einsteinBody }, contact_id)
-
-    const optionalBody = buildOptionalNoteBody(supabase_contact.notes)
-    if (optionalBody) {
-      await createGhlNote({ userId: 'JERtBepiajyLX1Pghv3T', body: optionalBody }, contact_id)
-    }
-
-    // success log
-    processedOk++
-    const left = total - i
-    console.log(
-      `[OK] #${i}/${total} fact_id=${supabase_contact.fact_id} left=${left} ` +
-      `window_rem=${lastWindowRemaining} daily=${lastDailyRemaining ?? 'n/a'}/${lastDailyLimit ?? 'n/a'}`
-    )
-
-    // Supabase update
-    console.log(
-      await updateFactContactTable({
-        uuid: supabase_contact.fact_id,
-        assignedUserId: assigned_user_id,
-        contactId: contact_id,
-        number: i
-      })
-    )
-
-  } catch (error) {
-    processedFail++
-    const left = total - i
-    if (isDuplicateError(error)) {
-      console.warn(
-        `[DUP] #${i}/${total} left=${left} :: duplicate found: ${supabase_contact.first_name} ${supabase_contact.last_name} (${supabase_contact.email}), skipping`
-      )
-    } else {
-      console.error(
-        `[ERR] #${i}/${total} fact_id=${supabase_contact?.fact_id ?? 'unknown'} left=${left} :: ${briefErrorMessage(error)}`
-      )
-      if (VERBOSE_ERRORS) console.log('payload=', contact_payload_error)
-    }
-    if (contact_response?.message === 'This location does not allow duplicated contacts.') {
+await Promise.allSettled(
+  supabase_bulk_data.map((row, i) =>
+    schedule(async () => {
       try {
-        await supabase.rpc('contact_only_mark_fact_contact_duplicate', { p_fact_id: current_fact_id })
-      } catch (e) {
-        console.error('[ERR] failed to mark duplicate in Supabase:', e?.message || e)
+        // skip duplicates flagged upfront
+        if (row.ghl_contact_id === 'DUPLICATE' && row.ghl_opportunity_id === 'DUPLICATE') {
+          dup++
+          if ((ok + fail + dup) % 10 === 0) {
+            console.log(`[SKIP] #${i + 1}/${total} duplicate fact_id=${row.fact_id}`)
+          }
+          return
+        }
+        await processOneContact(row, i + 1, total)
+        ok++
+      } catch (error) {
+        if (isDuplicateError(error)) {
+          dup++
+          console.warn(`[DUP] #${i + 1}/${total} :: duplicate ${row.first_name} ${row.last_name} (${row.email})`)
+          try { await supabase.rpc('contact_only_mark_fact_contact_duplicate', { p_fact_id: row.fact_id }) } catch {}
+        } else {
+          fail++
+          console.error(`[ERR] #${i + 1}/${total} fact_id=${row?.fact_id ?? 'unknown'} :: ${briefErrorMessage(error)}`)
+          if (VERBOSE_ERRORS) console.log('payload_fact_id=', row.fact_id)
+        }
+      } finally {
+        const processed = ok + fail + dup
+        if (processed % 100 === 0) {
+          console.log(`[PROG] ${processed}/${total} processed | ok=${ok} fail=${fail} dup=${dup} ` +
+                      `window_rem=${lastWindowRemaining} daily=${lastDailyRemaining ?? 'n/a'}/${lastDailyLimit ?? 'n/a'}`)
+        }
       }
-    }
-  } finally {
-    if (i % 100 === 0) {
-      console.log(`[PROG] ${i}/${total} processed | ok=${processedOk} fail=${processedFail} ` +
-                  `window_rem=${lastWindowRemaining} daily=${lastDailyRemaining ?? 'n/a'}/${lastDailyLimit ?? 'n/a'}`)
-    }
-    i++
-  }
-}
+    })
+  )
+)
 
 await supabase.auth.signOut?.()
 const end = performance.now()
 console.log(
-  `[DONE] total=${total} ok=${processedOk} fail=${processedFail} ` +
+  `[DONE] total=${total} ok=${ok} fail=${fail} dup=${dup} ` +
   `elapsed_ms=${Math.round(end - start)} window_rem=${lastWindowRemaining} ` +
   `daily=${lastDailyRemaining ?? 'n/a'}/${lastDailyLimit ?? 'n/a'}`
 )

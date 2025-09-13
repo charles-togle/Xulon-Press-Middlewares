@@ -11,11 +11,12 @@ const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
 const sampleBody = {
-  writing_process: 'I have not started writing my book yet',
-  email: 'VertexLabs@gmail.com',
-  first_name: 'VertexLabs',
-  last_name: 'Test',
-  zip_code: '12345',
+  email: 'Cvmoniot@gmail.com',
+  first_name: 'Charles ',
+  last_name: 'Moniot ',
+  phone: '4404132765',
+  zip_code: '44312',
+  writing_process: 'I have finished writing my book',
   landing_page_id: 'https://www.salemoffers.com/campaign/ready-to-publish'
 }
 
@@ -32,7 +33,7 @@ if (loginError) {
 console.log(`Log In Sucess: "Welcome Super ${EMAIL}`)
 
 const { data, error: functionError } = await supabase.functions.invoke(
-  'updated_salem_webhook',
+  'salem_media_webhook',
   {
     body: {
       ...sampleBody

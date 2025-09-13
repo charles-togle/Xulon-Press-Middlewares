@@ -1,0 +1,324 @@
+{
+  "CONTACT_CREATION": {
+    "contact_id": "uO9qGvMT8ylN4Dlxrchq",
+    "first_name": "VERTEX",
+    "last_name": "TEST",
+    "full_name": "VERTEX TEST",
+    "email": "email@example.com",
+    "phone": "+12345678923",
+    "tags": "",
+    "country": "US",
+    "timezone": "Etc/GMT+12",
+    "date_created": "2025-09-13T07:33:29.049Z",
+    "full_address": "",
+    "contact_type": "lead",
+    "location": {
+      "name": "Xulon Enterprises",
+      "address": "555 Winderley Pl suite 225",
+      "city": "Maitland",
+      "state": "Florida",
+      "country": "US",
+      "postalCode": "32751",
+      "fullAddress": "555 Winderley Pl suite 225, Maitland Florida 32751",
+      "id": "ztC7GrzfpwRrsyIBthNZ"
+    },
+    "workflow": {
+      "id": "ea8c6cc3-c786-4ed2-b808-e36f86a3ec60",
+      "name": "Contact Created"
+    },
+    "triggerData": {},
+    "contact": {
+      "attributionSource": {
+        "sessionSource": "CRM UI",
+        "medium": "manual",
+        "mediumId": null
+      },
+      "lastAttributionSource": {}
+    },
+    "attributionSource": {},
+    "customData": {}
+  },
+
+  "CONTACT_UPDATE": {
+    "Publisher C": "Xulon Press",
+    "Timezone C": "Eastern",
+    "Active Campaigns C": ["Email Newsletter", "Direct Mail", "SMS"],
+    "Contact Source Detail": "Contact Update Source Detail",
+    "Source Detail Value C": "Contact Update Source Detail Value C",
+    "contact_id": "uO9qGvMT8ylN4Dlxrchq",
+    "first_name": "VERTEX",
+    "last_name": "TEST",
+    "full_name": "VERTEX TEST",
+    "email": "email@example.com",
+    "phone": "+12345678923",
+    "tags": "",
+    "address1": "Contact Update Street Address",
+    "city": "Contact Update City",
+    "state": "Contact Update State",
+    "country": "US",
+    "timezone": "Etc/GMT+12",
+    "date_created": "2025-09-13T07:33:29.049Z",
+    "postal_code": "Contact Update Postal Code",
+    "company_name": "Contact Update Business Name",
+    "website": "Contact Update Website",
+    "date_of_birth": "2021-02-03T00:00:00.000Z",
+    "contact_source": "Contact Update Source",
+    "full_address": "Contact Update Street Address, Contact Update City Contact Update State Contact Update Postal Code",
+    "contact_type": "lead",
+    "location": {
+      "name": "Xulon Enterprises",
+      "address": "555 Winderley Pl suite 225",
+      "city": "Maitland",
+      "state": "Florida",
+      "country": "US",
+      "postalCode": "32751",
+      "fullAddress": "555 Winderley Pl suite 225, Maitland Florida 32751",
+      "id": "ztC7GrzfpwRrsyIBthNZ"
+    },
+    "workflow": {
+      "id": "e8809618-0759-44bf-9a54-255c785f5cee",
+      "name": "Contact Changes"
+    },
+    "triggerData": {},
+    "contact": {
+      "attributionSource": {
+        "sessionSource": "CRM UI",
+        "medium": "manual",
+        "mediumId": null
+      },
+      "lastAttributionSource": {}
+    },
+    "attributionSource": {},
+    "customData": {}
+  },
+
+  "OPPORTUNITY_CREATION_UPDATE": {
+    "Publisher C": "Xulon Press",
+    "Timezone C": "Eastern",
+    "Active Campaigns C": ["Email Newsletter", "Direct Mail", "SMS"],
+    "Contact Source Detail": "Contact Update Source Detail",
+    "Source Detail Value C": "Contact Update Source Detail Value C",
+    "contact_id": "uO9qGvMT8ylN4Dlxrchq",
+    "first_name": "VERTEX",
+    "last_name": "TEST",
+    "full_name": "VERTEX TEST",
+    "email": "email@example.com",
+    "phone": "+12345678923",
+    "tags": "",
+    "address1": "Contact Update Street Address",
+    "city": "Contact Update City",
+    "state": "Contact Update State",
+    "country": "US",
+    "timezone": "Etc/GMT+12",
+    "date_created": "2025-09-13T07:33:29.049Z",
+    "postal_code": "Contact Update Postal Code",
+    "company_name": "Contact Update Business Name",
+    "website": "Contact Update Website",
+    "date_of_birth": "2021-02-03T00:00:00.000Z",
+    "contact_source": "Contact Update Source",
+    "full_address": "Contact Update Street Address, Contact Update City Contact Update State Contact Update Postal Code",
+    "contact_type": "lead",
+    "opportunity_name": "VERTEX TEST",
+    "status": "open",
+    "opportunity_source": "Opportunity Create Source",
+    "source": "Opportunity Create Source",
+    "pipleline_stage": "Email/SMS Reply",
+    "pipeline_id": "99sfn2ftucg0pdoBr2RR",
+    "id": "SyD7LcWLDyUe4XWqJ0iv",
+    "pipeline_name": "1. Hot",
+    "user": {
+      "firstName": "Automated",
+      "lastName": "Assistant",
+      "email": "tyleramos2025@gmail.com",
+      "phone": "+18888888888"
+    },
+    "owner": "Automated Assistant",
+    "location": {
+      "name": "Xulon Enterprises",
+      "address": "555 Winderley Pl suite 225",
+      "city": "Maitland",
+      "state": "Florida",
+      "country": "US",
+      "postalCode": "32751",
+      "fullAddress": "555 Winderley Pl suite 225, Maitland Florida 32751",
+      "id": "ztC7GrzfpwRrsyIBthNZ"
+    },
+    "workflow": {
+      "id": "5d4bd27a-96ee-4a0d-bbf0-7c98690efde5",
+      "name": "Opportunity Changes"
+    },
+    "triggerData": {},
+    "contact": {
+      "attributionSource": {
+        "sessionSource": "CRM UI",
+        "medium": "manual",
+        "mediumId": null
+      },
+      "lastAttributionSource": {}
+    },
+    "attributionSource": {},
+    "customData": {}
+  },
+
+  "NOTE_CREATION_UPDATE": {
+    "Publisher C": "Xulon Press",
+    "Timezone C": "Eastern",
+    "Active Campaigns C": ["Email Newsletter", "Direct Mail", "SMS"],
+    "Contact Source Detail": "Contact Update Source Detail",
+    "Source Detail Value C": "Contact Update Source Detail Value C",
+    "contact_id": "uO9qGvMT8ylN4Dlxrchq",
+    "first_name": "VERTEX",
+    "last_name": "TEST",
+    "full_name": "VERTEX TEST",
+    "email": "email@example.com",
+    "phone": "+12345678923",
+    "tags": "",
+    "address1": "Contact Update Street Address",
+    "city": "Contact Update City",
+    "state": "Contact Update State",
+    "country": "US",
+    "timezone": "Etc/GMT+12",
+    "date_created": "2025-09-13T07:33:29.049Z",
+    "postal_code": "Contact Update Postal Code",
+    "company_name": "Opportunity Update Business Name",
+    "website": "Contact Update Website",
+    "date_of_birth": "2021-02-03T00:00:00.000Z",
+    "contact_source": "Contact Update Source",
+    "full_address": "Contact Update Street Address, Contact Update City Contact Update State Contact Update Postal Code",
+    "contact_type": "lead",
+    "location": {
+      "name": "Xulon Enterprises",
+      "address": "555 Winderley Pl suite 225",
+      "city": "Maitland",
+      "state": "Florida",
+      "country": "US",
+      "postalCode": "32751",
+      "fullAddress": "555 Winderley Pl suite 225, Maitland Florida 32751",
+      "id": "ztC7GrzfpwRrsyIBthNZ"
+    },
+    "note": { "body": "Im editing a note" },
+    "workflow": {
+      "id": "f8fa0480-f35c-48d1-8c35-7fd5ba732aa8",
+      "name": "Notes Changes"
+    },
+    "triggerData": {},
+    "contact": {
+      "attributionSource": {
+        "sessionSource": "CRM UI",
+        "medium": "manual",
+        "mediumId": null
+      },
+      "lastAttributionSource": {}
+    },
+    "attributionSource": {},
+    "customData": {}
+  },
+
+  "NOTE_SECOND_CREATION": {
+    "Publisher C": "Xulon Press",
+    "Timezone C": "Eastern",
+    "Active Campaigns C": ["Email Newsletter", "Direct Mail", "SMS"],
+    "Contact Source Detail": "Contact Update Source Detail",
+    "Source Detail Value C": "Contact Update Source Detail Value C",
+    "contact_id": "uO9qGvMT8ylN4Dlxrchq",
+    "first_name": "VERTEX",
+    "last_name": "TEST",
+    "full_name": "VERTEX TEST",
+    "email": "email@example.com",
+    "phone": "+12345678923",
+    "tags": "",
+    "address1": "Contact Update Street Address",
+    "city": "Contact Update City",
+    "state": "Contact Update State",
+    "country": "US",
+    "timezone": "Etc/GMT+12",
+    "date_created": "2025-09-13T07:33:29.049Z",
+    "postal_code": "Contact Update Postal Code",
+    "company_name": "Opportunity Update Business Name",
+    "website": "Contact Update Website",
+    "date_of_birth": "2021-02-03T00:00:00.000Z",
+    "contact_source": "Contact Update Source",
+    "full_address": "Contact Update Street Address, Contact Update City Contact Update State Contact Update Postal Code",
+    "contact_type": "lead",
+    "location": {
+      "name": "Xulon Enterprises",
+      "address": "555 Winderley Pl suite 225",
+      "city": "Maitland",
+      "state": "Florida",
+      "country": "US",
+      "postalCode": "32751",
+      "fullAddress": "555 Winderley Pl suite 225, Maitland Florida 32751",
+      "id": "ztC7GrzfpwRrsyIBthNZ"
+    },
+    "note": { "body": "This is second note" },
+    "workflow": {
+      "id": "bc2950c8-c0d4-4fce-816a-5c0b5a85c582",
+      "name": "Notes Created"
+    },
+    "triggerData": {},
+    "contact": {
+      "attributionSource": {
+        "sessionSource": "CRM UI",
+        "medium": "manual",
+        "mediumId": null
+      },
+      "lastAttributionSource": {}
+    },
+    "attributionSource": {},
+    "customData": {}
+  },
+
+  "NOTE_SECOND_UPDATE": {
+    "Publisher C": "Xulon Press",
+    "Timezone C": "Eastern",
+    "Active Campaigns C": ["Email Newsletter", "Direct Mail", "SMS"],
+    "Contact Source Detail": "Contact Update Source Detail",
+    "Source Detail Value C": "Contact Update Source Detail Value C",
+    "contact_id": "uO9qGvMT8ylN4Dlxrchq",
+    "first_name": "VERTEX",
+    "last_name": "TEST",
+    "full_name": "VERTEX TEST",
+    "email": "email@example.com",
+    "phone": "+12345678923",
+    "tags": "",
+    "address1": "Contact Update Street Address",
+    "city": "Contact Update City",
+    "state": "Contact Update State",
+    "country": "US",
+    "timezone": "Etc/GMT+12",
+    "date_created": "2025-09-13T07:33:29.049Z",
+    "postal_code": "Contact Update Postal Code",
+    "company_name": "Opportunity Update Business Name",
+    "website": "Contact Update Website",
+    "date_of_birth": "2021-02-03T00:00:00.000Z",
+    "contact_source": "Contact Update Source",
+    "full_address": "Contact Update Street Address, Contact Update City Contact Update State Contact Update Postal Code",
+    "contact_type": "lead",
+    "location": {
+      "name": "Xulon Enterprises",
+      "address": "555 Winderley Pl suite 225",
+      "city": "Maitland",
+      "state": "Florida",
+      "country": "US",
+      "postalCode": "32751",
+      "fullAddress": "555 Winderley Pl suite 225, Maitland Florida 32751",
+      "id": "ztC7GrzfpwRrsyIBthNZ"
+    },
+    "note": { "body": "Editing the second note" },
+    "workflow": {
+      "id": "f8fa0480-f35c-48d1-8c35-7fd5ba732aa8",
+      "name": "Notes Changes"
+    },
+    "triggerData": {},
+    "contact": {
+      "attributionSource": {
+        "sessionSource": "CRM UI",
+        "medium": "manual",
+        "mediumId": null
+      },
+      "lastAttributionSource": {}
+    },
+    "attributionSource": {},
+    "customData": {}
+  }
+}

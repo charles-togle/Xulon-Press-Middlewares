@@ -356,7 +356,7 @@ for (const supabase_contact of supabase_bulk_data) {
       body: `Proposal Link: \n\n ${supabase_contact.einstein_url}`
     }
 
-    if (!supabase_contact.notes || supabase_contact.notes === 'Unprovided') {
+    if (supabase_contact.notes || supabase_contact.notes !== 'Unprovided') {
       const notes_payload = {
         userId: 'JERtBepiajyLX1Pghv3T',
         body: supabase_contact.notes

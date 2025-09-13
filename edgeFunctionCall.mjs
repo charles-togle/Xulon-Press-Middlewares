@@ -12,10 +12,9 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
 const sampleBody = {
   writing_process: 'I have not started writing my book yet',
-  email: 'charlestogle@gmail.com',
-  first_name: 'Charles',
-  last_name: 'Togle',
-  phone: '15419045565',
+  email: 'VertexLabs@gmail.com',
+  first_name: 'VertexLabs',
+  last_name: 'Test',
   zip_code: '12345',
   landing_page_id: 'https://www.salemoffers.com/campaign/ready-to-publish'
 }
@@ -29,6 +28,8 @@ if (loginError) {
   console.error('Error authenticating user: ', loginError)
   process.exit(0)
 }
+
+console.log(`Log In Sucess: "Welcome Super ${EMAIL}`)
 
 const { data, error: functionError } = await supabase.functions.invoke(
   'updated_salem_webhook',

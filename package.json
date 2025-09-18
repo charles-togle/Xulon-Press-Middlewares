@@ -8,6 +8,7 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.39.3",
     "dotenv": "^17.2.2",
+    "fs": "^0.0.1-security",
     "node-fetch": "^3.3.2"
   },
   "name": "xulon-press-test-functions",

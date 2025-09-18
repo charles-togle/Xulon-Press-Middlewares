@@ -333,17 +333,6 @@
         "state": "FL"
     },
     {
-        "first_name": "Xulon",
-        "last_name": "Testlead",
-        "email": "xulontest@fph.com",
-        "phone": "7087389484",
-        "christian_publishing": "Yes",
-        "writing_process": "My book is ready now",
-        "zip_code": "60645",
-        "genre": "Faith and Spirituality",
-        "salutation": "Mr."
-    },
-    {
         "first_name": "Amit",
         "last_name": "Kumar",
         "email": "amit@gmail.com",
@@ -351,37 +340,5 @@
         "christian_publishing": "Yes",
         "writing_process": "My book is ready now",
         "zip_code": "10017"
-    },
-    {
-        "email": "amit@gmail.com",
-        "phone": "2126555730"
-    },
-    {
-        "email": "testlead15@gmail.com",
-        "phone": "7084789736"
-    },
-    {
-        "email": "testlead15@gmail.com",
-        "phone": "7084789736"
-    },
-    {
-        "email": "testlead15@gmail.com",
-        "phone": "7084789736"
-    },
-    {
-        "email": "testlead15@gmail.com",
-        "phone": "7084789736"
-    },
-    {
-        "email": "matt@findpublishinghelp.com",
-        "phone": "7084796701"
-    },
-    {
-        "email": "matt@findpublishinghelp.com",
-        "phone": "7084796701"
-    },
-    {
-        "email": "testlead15@gmail.com",
-        "phone": "7084789736"
     }
 ]

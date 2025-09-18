@@ -69,8 +69,7 @@ const updateFactContactTable = async ({
   uuid,
   contactId,
   opportunityId,
-  assignedUserId,
-  number
+  assignedUserId
 }) => {
   const { error } = await supabase.rpc('update_last_assigned_at', {
     p_assigned_user_id: assignedUserId,
@@ -85,7 +84,6 @@ const updateFactContactTable = async ({
     return `Contact #${i}: Successfully imported contact ${uuid} to go high level`
   }
 }
-
 
 //GHL API REQUESTS
 const createGhlContact = async payload => {
@@ -351,10 +349,6 @@ for (const supabase_contact of supabase_bulk_data) {
       contact_id = contactResponseData.contact.id
     }
 
-    const einstein_notes_payload = {
-      userId: 'JERtBepiajyLX1Pghv3T',
-      body: `Proposal Link: \n\n ${supabase_contact.einstein_url}`
-    }
 
     if (supabase_contact.notes || supabase_contact.notes !== 'Unprovided') {
       const notes_payload = {

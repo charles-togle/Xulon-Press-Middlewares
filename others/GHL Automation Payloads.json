@@ -38,11 +38,14 @@
     "attributionSource": {},
     "customData": {}
   },
-
   "CONTACT_UPDATE": {
     "Publisher C": "Xulon Press",
     "Timezone C": "Eastern",
-    "Active Campaigns C": ["Email Newsletter", "Direct Mail", "SMS"],
+    "Active Campaigns C": [
+      "Email Newsletter",
+      "Direct Mail",
+      "SMS"
+    ],
     "Contact Source Detail": "Contact Update Source Detail",
     "Source Detail Value C": "Contact Update Source Detail Value C",
     "contact_id": "uO9qGvMT8ylN4Dlxrchq",
@@ -91,11 +94,14 @@
     "attributionSource": {},
     "customData": {}
   },
-
   "OPPORTUNITY_CREATION_UPDATE": {
     "Publisher C": "Xulon Press",
     "Timezone C": "Eastern",
-    "Active Campaigns C": ["Email Newsletter", "Direct Mail", "SMS"],
+    "Active Campaigns C": [
+      "Email Newsletter",
+      "Direct Mail",
+      "SMS"
+    ],
     "Contact Source Detail": "Contact Update Source Detail",
     "Source Detail Value C": "Contact Update Source Detail Value C",
     "contact_id": "uO9qGvMT8ylN4Dlxrchq",
@@ -159,11 +165,14 @@
     "attributionSource": {},
     "customData": {}
   },
-
   "NOTE_CREATION_UPDATE": {
     "Publisher C": "Xulon Press",
     "Timezone C": "Eastern",
-    "Active Campaigns C": ["Email Newsletter", "Direct Mail", "SMS"],
+    "Active Campaigns C": [
+      "Email Newsletter",
+      "Direct Mail",
+      "SMS"
+    ],
     "Contact Source Detail": "Contact Update Source Detail",
     "Source Detail Value C": "Contact Update Source Detail Value C",
     "contact_id": "uO9qGvMT8ylN4Dlxrchq",
@@ -196,7 +205,9 @@
       "fullAddress": "555 Winderley Pl suite 225, Maitland Florida 32751",
       "id": "ztC7GrzfpwRrsyIBthNZ"
     },
-    "note": { "body": "Im editing a note" },
+    "note": {
+      "body": "Im editing a note"
+    },
     "workflow": {
       "id": "f8fa0480-f35c-48d1-8c35-7fd5ba732aa8",
       "name": "Notes Changes"
@@ -213,11 +224,14 @@
     "attributionSource": {},
     "customData": {}
   },
-
   "NOTE_SECOND_CREATION": {
     "Publisher C": "Xulon Press",
     "Timezone C": "Eastern",
-    "Active Campaigns C": ["Email Newsletter", "Direct Mail", "SMS"],
+    "Active Campaigns C": [
+      "Email Newsletter",
+      "Direct Mail",
+      "SMS"
+    ],
     "Contact Source Detail": "Contact Update Source Detail",
     "Source Detail Value C": "Contact Update Source Detail Value C",
     "contact_id": "uO9qGvMT8ylN4Dlxrchq",
@@ -250,7 +264,9 @@
       "fullAddress": "555 Winderley Pl suite 225, Maitland Florida 32751",
       "id": "ztC7GrzfpwRrsyIBthNZ"
     },
-    "note": { "body": "This is second note" },
+    "note": {
+      "body": "This is second note"
+    },
     "workflow": {
       "id": "bc2950c8-c0d4-4fce-816a-5c0b5a85c582",
       "name": "Notes Created"
@@ -267,11 +283,14 @@
     "attributionSource": {},
     "customData": {}
   },
-
   "NOTE_SECOND_UPDATE": {
     "Publisher C": "Xulon Press",
     "Timezone C": "Eastern",
-    "Active Campaigns C": ["Email Newsletter", "Direct Mail", "SMS"],
+    "Active Campaigns C": [
+      "Email Newsletter",
+      "Direct Mail",
+      "SMS"
+    ],
     "Contact Source Detail": "Contact Update Source Detail",
     "Source Detail Value C": "Contact Update Source Detail Value C",
     "contact_id": "uO9qGvMT8ylN4Dlxrchq",
@@ -304,7 +323,9 @@
       "fullAddress": "555 Winderley Pl suite 225, Maitland Florida 32751",
       "id": "ztC7GrzfpwRrsyIBthNZ"
     },
-    "note": { "body": "Editing the second note" },
+    "note": {
+      "body": "Editing the second note"
+    },
     "workflow": {
       "id": "f8fa0480-f35c-48d1-8c35-7fd5ba732aa8",
       "name": "Notes Changes"
@@ -320,5 +341,128 @@
     },
     "attributionSource": {},
     "customData": {}
+  },
+  "COMPLETE_CONTACT_PAYLOAD": {
+    "Publisher C": "Unknown",
+    "Timezone C": "Unknown",
+    "Active Campaigns C": [
+      "Email Newsletter",
+      "SMS",
+      "Direct Mail"
+    ],
+    "Contact Source Detail": "Contact Source Detail",
+    "Source Detail Value C": "Source Detail Value C",
+    "contact_id": "IQBIi8mDW3s5zqkMO5eX",
+    "first_name": "Vertex",
+    "last_name": "Test",
+    "full_name": "Vertex Test",
+    "email": "vt@vertex.co",
+    "phone": "+12345678923",
+    "tags": "",
+    "address1": "Street Address",
+    "city": "City",
+    "state": "State",
+    "country": "US",
+    "timezone": "Pacific/Midway",
+    "date_created": "2025-09-13T08:06:42.913Z",
+    "postal_code": "Postal Code",
+    "company_name": "Business Name",
+    "website": "Website",
+    "date_of_birth": "2020-01-04T00:00:00.000Z",
+    "contact_source": "Contact Source",
+    "full_address": "Street Address, City State Postal Code",
+    "contact_type": "lead",
+    "location": {
+      "name": "Xulon Enterprises",
+      "address": "555 Winderley Pl suite 225",
+      "city": "Maitland",
+      "state": "Florida",
+      "country": "US",
+      "postalCode": "32751",
+      "fullAddress": "555 Winderley Pl suite 225, Maitland Florida 32751",
+      "id": "ztC7GrzfpwRrsyIBthNZ"
+    },
+    "workflow": {
+      "id": "e8809618-0759-44bf-9a54-255c785f5cee",
+      "name": "Contact Changes"
+    },
+    "triggerData": {},
+    "contact": {
+      "attributionSource": {
+        "sessionSource": "CRM UI",
+        "medium": "manual",
+        "mediumId": null
+      },
+      "lastAttributionSource": {}
+    },
+    "attributionSource": {},
+    "customData": {}
+  },
+  "FULL PAYLOAD": {
+    "opportunity-update": {
+      "Publisher C": "Xulon Press",
+      "Timezone C": "Mountain",
+      "Active Campaigns C": "",
+      "Contact Source Detail": "Google PPC",
+      "Source Detail Value C": "Unprovided",
+      "contact_id": "opkUuwpsNNMPG5sF6XR5",
+      "first_name": "Opportunity Update",
+      "last_name": "Test",
+      "full_name": "Opportunity Update Test",
+      "email": "email@email.co",
+      "phone": "+12345678343",
+      "tags": "",
+      "country": "US",
+      "timezone": "Pacific/Midway",
+      "date_created": "2025-09-16T06:54:08.912Z",
+      "company_name": "Business Name",
+      "date_of_birth": "2021-02-03T00:00:00.000Z",
+      "contact_source": "Unprovided",
+      "full_address": "",
+      "contact_type": "author",
+      "opportunity_name": "Opportunity Update Test",
+      "status": "open",
+      "opportunity_source": "Unprovided",
+      "source": "Unprovided",
+      "pipleline_stage": "New",
+      "pipeline_id": "j7luVqP7W92h8E9AWaSe",
+      "id": "Rap3Tu2KvqJLJh9iK34F",
+      "pipeline_name": "2. Warm",
+      "location": {
+        "name": "Xulon Enterprises",
+        "address": "555 Winderley Pl suite 225",
+        "city": "Maitland",
+        "state": "Florida",
+        "country": "US",
+        "postalCode": "32751",
+        "fullAddress": "555 Winderley Pl suite 225, Maitland Florida 32751",
+        "id": "ztC7GrzfpwRrsyIBthNZ"
+      },
+      "workflow": {
+        "id": "5d4bd27a-96ee-4a0d-bbf0-7c98690efde5",
+        "name": "Opportunity Changes"
+      },
+      "triggerData": {},
+      "contact": {
+        "attributionSource": {
+          "sessionSource": "CRM UI",
+          "medium": "manual",
+          "mediumId": null
+        },
+        "lastAttributionSource": {}
+      },
+      "attributionSource": {},
+      "customData": {
+        "genre": "Art",
+        "owner": "",
+        "outreach_attempt": "3",
+        "active_or_past_author": "true",
+        "book_description": "Book Description",
+        "writing_process": "I have finished writing my book",
+        "publisher": "Xulon Press",
+        "timezone": "Mountain",
+        "source_detail_value": "Unprovided"
+      }
+    }
   }
 }

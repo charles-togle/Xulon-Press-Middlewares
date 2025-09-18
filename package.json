@@ -6,7 +6,7 @@
     "test": "echo \"no tests\" && exit 0"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.57.2",
+    "@supabase/supabase-js": "^2.39.3",
     "dotenv": "^17.2.2",
     "node-fetch": "^3.3.2"
   },

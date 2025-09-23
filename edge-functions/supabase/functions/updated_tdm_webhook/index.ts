@@ -4,6 +4,11 @@ import { createClient } from 'npm:@supabase/supabase-js@2.39.3'
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? ''
 const SUPABASE_SERVICE_ROLE_KEY =
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+
+function capitalize (str: string | null): string | null {
+  if (!str || typeof str !== 'string') return str
+  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase()
+}
 Deno.serve(async req => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', {
@@ -35,14 +40,17 @@ Deno.serve(async req => {
       writing_process = null,
       zip_code = null,
       genre = null,
-      salutation = null,
       address = null,
       city = null,
       state = null
     } = payload
+
+    const normalized_first_name = capitalize(first_name)
+    const normalized_last_name = capitalize(last_name)
+
     const requiredFields = {
-      first_name,
-      last_name,
+      first_name: normalized_first_name,
+      last_name: normalized_last_name,
       email,
       writing_process,
       zip_code
@@ -112,11 +120,12 @@ Deno.serve(async req => {
         stage: 'New',
         publisher: publisher
       })
+
     const { data: stagingData, error: stagingError } = await supabase.rpc(
       'insert_lead_staging',
       {
-        p_first_name: `${salutation ?? ''} ${first_name}`,
-        p_last_name: last_name,
+        p_first_name: normalized_first_name,
+        p_last_name: normalized_last_name,
         p_email: email ?? '',
         p_phone: phone ?? '',
         p_postal_code: zip_code ?? 'Unprovided',

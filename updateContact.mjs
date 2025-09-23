@@ -2,8 +2,6 @@ const start = performance.now()
 
 import { createClient } from '@supabase/supabase-js'
 import dotenv from 'dotenv'
-import readline from 'readline'
-import fs from 'fs'
 dotenv.config()
 
 const SUPABASE_URL = process.env.SUPABASE_URL

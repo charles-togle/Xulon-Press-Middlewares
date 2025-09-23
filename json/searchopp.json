@@ -1,0 +1,318 @@
+{
+  "opportunities": [
+    {
+      "id": "GXTHuzrBHGY0rmX3YhIt",
+      "name": "Timothy Hockett",
+      "monetaryValue": 0,
+      "pipelineId": "j7luVqP7W92h8E9AWaSe",
+      "pipelineStageId": "8d4c08f0-4ee7-4637-8298-81f87876471b",
+      "pipelineStageUId": "8d4c08f0-4ee7-4637-8298-81f87876471b",
+      "assignedTo": "Xn2ZoiDcbu3KK91tQtEK",
+      "status": "open",
+      "source": null,
+      "lastStatusChangeAt": "2025-09-08T13:32:02.167Z",
+      "lastStageChangeAt": "2025-09-08T13:32:02.167Z",
+      "createdAt": "2025-09-08T13:32:02.167Z",
+      "updatedAt": "2025-09-08T13:32:04.003Z",
+      "contactId": "PiAJXCgexk9Agsl68KFa",
+      "locationId": "ztC7GrzfpwRrsyIBthNZ",
+      "customFields": [
+        {
+          "fieldValueString": "Xulon Press",
+          "id": "ggsTQrS88hJgLI5J5604",
+          "type": "string"
+        },
+        {
+          "fieldValueString": "Pacific",
+          "id": "gsFwmLo8XyzCjIoXxXYQ",
+          "type": "string"
+        },
+        {
+          "fieldValueString": "No",
+          "id": "4P0Yd0fLzOfns3opxTGo",
+          "type": "string"
+        },
+        {
+          "fieldValueString": "Non-Fiction",
+          "id": "5wlgHZzuWLyr918dMh7y",
+          "type": "string"
+        },
+        {
+          "fieldValueString": "I have finished writing my book",
+          "id": "cG5oYGyyKmEWwzn7y8HA",
+          "type": "string"
+        },
+        {
+          "fieldValueString": "Unprovided",
+          "id": "aOH64ZsyJ5blAZtf9IxK",
+          "type": "string"
+        },
+        {
+          "fieldValueString": "0",
+          "id": "BOGtp8xLezwurePxIkNE",
+          "type": "string"
+        },
+        {
+          "fieldValueString": "https://www.salemauthorcenter.com/ghl/index.php?ContactID=4e95ce4e-6021-4a56-895b-ec9075f16f38",
+          "id": "5lDyHBJDAukD5YM7M4WG",
+          "type": "string"
+        },
+        {
+          "fieldValueString": "Warm",
+          "id": "uUEENCZJBnr0mjbuPe98",
+          "type": "string"
+        },
+        {
+          "fieldValueString": "Unprovided",
+          "id": "UAjLmcYVz1hdI4sPVKSr",
+          "type": "string"
+        }
+      ],
+      "lostReasonId": null,
+      "followers": [],
+      "relations": [
+        {
+          "associationId": "OPPORTUNITIES_CONTACTS_ASSOCIATION",
+          "relationId": "GXTHuzrBHGY0rmX3YhIt",
+          "primary": true,
+          "objectKey": "contact",
+          "recordId": "PiAJXCgexk9Agsl68KFa",
+          "fullName": "Timothy Hockett",
+          "contactName": "Timothy Hockett",
+          "companyName": null,
+          "email": "hockett.tim@gmail.com",
+          "phone": "+15419045565",
+          "tags": [],
+          "attributed": null
+        }
+      ],
+      "contact": {
+        "id": "PiAJXCgexk9Agsl68KFa",
+        "name": "Timothy Hockett",
+        "companyName": null,
+        "email": "hockett.tim@gmail.com",
+        "phone": "+15419045565",
+        "tags": [],
+        "score": []
+      },
+      "sort": [
+        1757338322167,
+        "PiAJXCgexk9Agsl68KFa"
+      ],
+      "attributions": []
+    },
+    {
+      "id": "n1B4BCzMtBZfBRwrGLxb",
+      "name": "Chloe Dye",
+      "monetaryValue": 0,
+      "pipelineId": "99sfn2ftucg0pdoBr2RR",
+      "pipelineStageId": "2a858ff6-fc19-4aa3-8765-2797719b25b9",
+      "pipelineStageUId": "2a858ff6-fc19-4aa3-8765-2797719b25b9",
+      "assignedTo": "hGPm3GynubM5KCahD3j4",
+      "status": "open",
+      "source": null,
+      "lastStatusChangeAt": "2025-09-08T13:31:59.306Z",
+      "lastStageChangeAt": "2025-09-22T14:17:40.785Z",
+      "createdAt": "2025-09-08T13:31:59.306Z",
+      "updatedAt": "2025-09-22T14:17:41.369Z",
+      "indexVersion": 3,
+      "contactId": "2cVsDwWtv39XjTpm7WTm",
+      "locationId": "ztC7GrzfpwRrsyIBthNZ",
+      "customFields": [
+        {
+          "fieldValueString": "Xulon Press",
+          "id": "ggsTQrS88hJgLI5J5604",
+          "type": "string"
+        },
+        {
+          "fieldValueString": "Central",
+          "id": "gsFwmLo8XyzCjIoXxXYQ",
+          "type": "string"
+        },
+        {
+          "fieldValueString": "No",
+          "id": "4P0Yd0fLzOfns3opxTGo",
+          "type": "string"
+        },
+        {
+          "fieldValueString": "Children",
+          "id": "5wlgHZzuWLyr918dMh7y",
+          "type": "string"
+        },
+        {
+          "fieldValueString": "I have finished writing my book",
+          "id": "cG5oYGyyKmEWwzn7y8HA",
+          "type": "string"
+        },
+        {
+          "fieldValueString": "Unprovided",
+          "id": "aOH64ZsyJ5blAZtf9IxK",
+          "type": "string"
+        },
+        {
+          "fieldValueString": "2",
+          "id": "BOGtp8xLezwurePxIkNE",
+          "type": "string"
+        },
+        {
+          "fieldValueString": "https://www.salemauthorcenter.com/ghl/index.php?ContactID=e59aea3c-10f0-4dee-b04b-77f4c560068b",
+          "id": "5lDyHBJDAukD5YM7M4WG",
+          "type": "string"
+        },
+        {
+          "fieldValueString": "Hot",
+          "id": "uUEENCZJBnr0mjbuPe98",
+          "type": "string"
+        },
+        {
+          "fieldValueString": "Unprovided",
+          "id": "UAjLmcYVz1hdI4sPVKSr",
+          "type": "string"
+        }
+      ],
+      "lostReasonId": null,
+      "followers": [],
+      "relations": [
+        {
+          "associationId": "OPPORTUNITIES_CONTACTS_ASSOCIATION",
+          "relationId": "n1B4BCzMtBZfBRwrGLxb",
+          "primary": true,
+          "objectKey": "contact",
+          "recordId": "2cVsDwWtv39XjTpm7WTm",
+          "fullName": "Chloe Dye",
+          "contactName": "Chloe Dye",
+          "companyName": null,
+          "email": "amandadye4353@gmail.com",
+          "phone": "+19319829041",
+          "tags": [],
+          "attributed": null
+        }
+      ],
+      "contact": {
+        "id": "2cVsDwWtv39XjTpm7WTm",
+        "name": "Chloe Dye",
+        "companyName": null,
+        "email": "amandadye4353@gmail.com",
+        "phone": "+19319829041",
+        "tags": [],
+        "score": []
+      },
+      "sort": [
+        1757338319306,
+        "2cVsDwWtv39XjTpm7WTm"
+      ],
+      "attributions": []
+    },
+    {
+      "id": "rkfgy2Ae5CuKoGni9Y8r",
+      "name": "Jessiah Baylis",
+      "monetaryValue": 0,
+      "pipelineId": "99sfn2ftucg0pdoBr2RR",
+      "pipelineStageId": "7fc824bd-52df-4ccd-9132-351bbfb5c37b",
+      "pipelineStageUId": "7fc824bd-52df-4ccd-9132-351bbfb5c37b",
+      "assignedTo": "eJjzee134YvQyexsBUqA",
+      "status": "open",
+      "source": null,
+      "lastStatusChangeAt": "2025-09-08T13:31:56.470Z",
+      "lastStageChangeAt": "2025-09-08T13:31:56.470Z",
+      "createdAt": "2025-09-08T13:31:56.470Z",
+      "updatedAt": "2025-09-08T13:31:58.207Z",
+      "contactId": "HgMxjggSqz3xMojQ8GEd",
+      "locationId": "ztC7GrzfpwRrsyIBthNZ",
+      "customFields": [
+        {
+          "fieldValueString": "Xulon Press",
+          "id": "ggsTQrS88hJgLI5J5604",
+          "type": "string"
+        },
+        {
+          "fieldValueString": "Eastern",
+          "id": "gsFwmLo8XyzCjIoXxXYQ",
+          "type": "string"
+        },
+        {
+          "fieldValueString": "No",
+          "id": "4P0Yd0fLzOfns3opxTGo",
+          "type": "string"
+        },
+        {
+          "fieldValueString": "Children",
+          "id": "5wlgHZzuWLyr918dMh7y",
+          "type": "string"
+        },
+        {
+          "fieldValueString": "I have finished writing my book",
+          "id": "cG5oYGyyKmEWwzn7y8HA",
+          "type": "string"
+        },
+        {
+          "fieldValueString": "Unprovided",
+          "id": "aOH64ZsyJ5blAZtf9IxK",
+          "type": "string"
+        },
+        {
+          "fieldValueString": "0",
+          "id": "BOGtp8xLezwurePxIkNE",
+          "type": "string"
+        },
+        {
+          "fieldValueString": "https://www.salemauthorcenter.com/ghl/index.php?ContactID=80013769-cac8-409d-ad08-435fb6639e06",
+          "id": "5lDyHBJDAukD5YM7M4WG",
+          "type": "string"
+        },
+        {
+          "fieldValueString": "Hot",
+          "id": "uUEENCZJBnr0mjbuPe98",
+          "type": "string"
+        },
+        {
+          "fieldValueString": "Unprovided",
+          "id": "UAjLmcYVz1hdI4sPVKSr",
+          "type": "string"
+        }
+      ],
+      "lostReasonId": null,
+      "followers": [],
+      "relations": [
+        {
+          "associationId": "OPPORTUNITIES_CONTACTS_ASSOCIATION",
+          "relationId": "rkfgy2Ae5CuKoGni9Y8r",
+          "primary": true,
+          "objectKey": "contact",
+          "recordId": "HgMxjggSqz3xMojQ8GEd",
+          "fullName": "Jessiah Baylis",
+          "contactName": "Jessiah Baylis",
+          "companyName": null,
+          "email": "jbaylis86@hotmail.com",
+          "phone": "+15166033174",
+          "tags": [],
+          "attributed": null
+        }
+      ],
+      "contact": {
+        "id": "HgMxjggSqz3xMojQ8GEd",
+        "name": "Jessiah Baylis",
+        "companyName": null,
+        "email": "jbaylis86@hotmail.com",
+        "phone": "+15166033174",
+        "tags": [],
+        "score": []
+      },
+      "sort": [
+        1757338316470,
+        "HgMxjggSqz3xMojQ8GEd"
+      ],
+      "attributions": []
+    }
+  ],
+  "meta": {
+    "total": 2503,
+    "nextPageUrl": "https://services.leadconnectorhq.com/opportunities/search?location_id=ztC7GrzfpwRrsyIBthNZ&page=26&limit=100&startAfter=1757338316470&startAfterId=HgMxjggSqz3xMojQ8GEd",
+    "startAfterId": "HgMxjggSqz3xMojQ8GEd",
+    "startAfter": 1757338316470,
+    "currentPage": 26,
+    "nextPage": "",
+    "prevPage": 25
+  },
+  "traceId": "97cf99d4-8904-41c2-bf78-c19606d99bda"
+}

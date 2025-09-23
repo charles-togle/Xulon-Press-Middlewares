@@ -1,0 +1,151 @@
+{
+  "contacts": [
+    {
+      "id": "DZNJn4QeybLlqCWnr9al",
+      "phoneLabel": null,
+      "country": "US",
+      "address": "2204 Cleveland aven southwest",
+      "source": "TDM Digital",
+      "type": "lead",
+      "locationId": "ztC7GrzfpwRrsyIBthNZ",
+      "website": "www.findpublishinghelp.com",
+      "dnd": false,
+      "state": "AL",
+      "businessName": null,
+      "customFields": [
+        {
+          "id": "AMgJg4wIu7GKV02OGxD3",
+          "value": "Xulon Press"
+        },
+        {
+          "id": "fFWUJ9OFbYBqVJjwjQGP",
+          "value": "Unknown"
+        },
+        {
+          "id": "IjmRpmQlwHiJjGnTLptG",
+          "value": "Landing Page"
+        },
+        {
+          "id": "JMwy9JsVRTTzg4PDQnhk",
+          "value": "www.findpublishinghelp.com"
+        }
+      ],
+      "tags": [],
+      "dateAdded": "2025-09-23T04:00:23.089Z",
+      "additionalEmails": [],
+      "phone": "+12563088227",
+      "companyName": null,
+      "additionalPhones": [],
+      "dateUpdated": "2025-09-23T09:33:45.668Z",
+      "city": "Decatur",
+      "dateOfBirth": null,
+      "firstNameLowerCase": "brad",
+      "lastNameLowerCase": "thompson",
+      "firstName": "Brad",
+      "lastName": "Thompson",
+      "email": "bradleythompson659@gmail.com",
+      "assignedTo": "kJNPperWVjPkxCfYIU3c",
+      "followers": [],
+      "validEmail": null,
+      "opportunities": [
+        {
+          "pipelineId": "j7luVqP7W92h8E9AWaSe",
+          "id": "TmngLdfolRwTW6NAMuv8",
+          "monetaryValue": 0,
+          "pipelineStageId": "b9ccd7f2-2d77-43a2-9e0c-a59388fd5c3e",
+          "status": "open"
+        }
+      ],
+      "postalCode": "35601",
+      "businessId": null,
+      "searchAfter": [
+        1758600023089,
+        "DZNJn4QeybLlqCWnr9al"
+      ]
+    }
+  ],
+  "total": 402235,
+  "traceId": "4acefadf-ac89-4e62-b2d9-920be8d67633"
+}
+
+
+{
+  "opportunity": {
+    "id": "TmngLdfolRwTW6NAMuv8",
+    "name": "Brad Thompson",
+    "monetaryValue": 0,
+    "pipelineId": "j7luVqP7W92h8E9AWaSe",
+    "pipelineStageId": "b9ccd7f2-2d77-43a2-9e0c-a59388fd5c3e",
+    "assignedTo": "kJNPperWVjPkxCfYIU3c",
+    "status": "open",
+    "source": "TDM Digital",
+    "lastStatusChangeAt": "2025-09-23T04:00:24.442Z",
+    "lastStageChangeAt": "2025-09-23T04:00:24.442Z",
+    "createdAt": "2025-09-23T04:00:24.442Z",
+    "updatedAt": "2025-09-23T04:00:24.717Z",
+    "contactId": "DZNJn4QeybLlqCWnr9al",
+    "isAttribute": false,
+    "internalSource": {
+      "type": "CREATED",
+      "id": "68be0b246a0a6c3761be69a4",
+      "apiVersion": "2021-07-28",
+      "channel": "OAUTH",
+      "source": "INTEGRATION"
+    },
+    "locationId": "ztC7GrzfpwRrsyIBthNZ",
+    "lastActionDate": "2025-09-23T04:00:24.703Z",
+    "customFields": [
+      {
+        "id": "ggsTQrS88hJgLI5J5604",
+        "fieldValue": "Xulon Press"
+      },
+      {
+        "id": "gsFwmLo8XyzCjIoXxXYQ",
+        "fieldValue": "Unknown"
+      },
+      {
+        "id": "4P0Yd0fLzOfns3opxTGo",
+        "fieldValue": "No"
+      },
+      {
+        "id": "5wlgHZzuWLyr918dMh7y",
+        "fieldValue": "Hobby/Special Interest"
+      },
+      {
+        "id": "cG5oYGyyKmEWwzn7y8HA",
+        "fieldValue": "I will be finished writing in 90 days"
+      },
+      {
+        "id": "aOH64ZsyJ5blAZtf9IxK",
+        "fieldValue": "Unprovided"
+      },
+      {
+        "id": "BOGtp8xLezwurePxIkNE",
+        "fieldValue": "0"
+      },
+      {
+        "id": "5lDyHBJDAukD5YM7M4WG",
+        "fieldValue": "https://www.salemauthorcenter.com/ghl/index.php?ContactID=2c140077-9d61-4df2-a42a-37d872cad6f6"
+      },
+      {
+        "id": "uUEENCZJBnr0mjbuPe98",
+        "fieldValue": "Warm"
+      },
+      {
+        "id": "UAjLmcYVz1hdI4sPVKSr",
+        "fieldValue": "www.findpublishinghelp.com"
+      }
+    ],
+    "followers": [],
+    "contact": {
+      "id": "DZNJn4QeybLlqCWnr9al",
+      "name": "Brad Thompson",
+      "email": "bradleythompson659@gmail.com",
+      "phone": "+12563088227",
+      "tags": [],
+      "assignedTo": "kJNPperWVjPkxCfYIU3c",
+      "followers": []
+    }
+  },
+  "traceId": "8117fc7c-7b0d-4141-a897-49294db95c46"
+}

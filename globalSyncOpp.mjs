@@ -264,12 +264,9 @@ const addEinsteinURL = async ({
     einstein_url
   )
   if (!noteEinsteinData?.note?.id) {
-    console.error(
-      'Error Updating Einstein URL',
-      opportunityEinsteinData?.message
-    )
+    console.error('Error Updating Einstein URL', noteEinsteinData?.message)
 
-    updateEinsteinUrlError.push(opportunityEinsteinData?.message)
+    updateEinsteinUrlError.push(noteEinsteinData?.message)
   }
 
   if (updateEinsteinUrlError.length !== 0) {
@@ -440,6 +437,7 @@ do {
             .join(', ') || ''
         processedOpportunities++
         lastProcessedContact = `Contact Name: ${currName}, ContactID: ${currContactID}`
+
         if (contactExists) {
           console.log('Update')
           const { data: updateData, error: updateError } = await supabase.rpc(

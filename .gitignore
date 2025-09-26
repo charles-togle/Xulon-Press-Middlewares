@@ -4,3 +4,5 @@
 /edge-functions
 /edge-functions
 /UpdateOppRecord
+*.txt
+.DS_Store

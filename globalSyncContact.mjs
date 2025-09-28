@@ -363,7 +363,7 @@ do {
               p_current_author: false,
               p_publisher: publisher,
               p_publishing_writing_process_stage: 'Unprovided',
-              p_genre: null,
+              p_genre: [],
               p_book_description: null,
               p_writing_status: null,
               p_rating: null,

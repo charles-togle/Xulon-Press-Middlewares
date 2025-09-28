@@ -1,0 +1,16 @@
+
+=== GHL CONTACT SYNC SUMMARY ===
+Timestamp: 2025-09-26T07:25:15.328Z
+Exit Code: 0
+Total Execution Time: 33.5008937 seconds
+Contacts Processed: 34
+Search After: 1757364417161,hRsW3k7bFjqiLvbfngdT
+Last Processed Contact: [object Object]
+Updated Fact IDs: 9c518eb9-1e11-465a-b0c1-9d41a56f7626,c852ea8d-72cc-4182-8a23-bc377f3ba6bd,ffffd48f-1b8f-44e9-9fcf-c97fea644fda,fffd7564-9ab9-4922-b886-f1412f875c50,c60097fa-3566-45e7-9c9f-6030f364fc55,ece293d1-a8f6-4ec6-886b-47cd45636ce8,fffd169e-322a-49ff-894b-10aeee779fd0,fffbd1a5-c318-4c02-9d17-a098728a0f78,fffaed51-6c83-4d99-a1b6-b4ff0b0875da,433d820f-6590-413e-9af7-2fbe2a1fe3f4,39f3d6ac-afe8-48da-b1f3-f01ed2e7b498,37b71e43-c8c7-4ac1-9aa6-61868680930f,2b9483e2-ee26-4fc9-b3b0-25b72aa8e782,120206e2-c62d-491d-b8bd-1b8339b79924,11ce675f-7e55-49b1-b602-0db41c01fc16,0f353027-53d6-4584-a301-a4001357c554,c48d33bb-54a3-4a5e-97d0-aa1bca74988b,d9a19509-7489-4411-91fd-411c678e6053,5c9ba0f0-bd9e-4134-836f-db79be1525df,01a4a0c9-3737-4576-85da-f49f4336271f,b832ff0e-11bf-45e4-b3d1-b63ff4acad5e,2ecbef9a-2b58-4301-aa7c-f3d33a66563e,f3ded993-fb72-4683-b15c-6ddebadd7000,b56b923c-105d-43a7-b7fa-4f18a695c5cf,cd559d1f-74d1-46e4-b3ba-98664a2d542e,ba35e81f-cfe3-45b2-88bb-76f1ffa7f321,fad556ee-91ac-40dc-b126-8bbfd52154c7,36f850b5-599f-4586-ad6a-06ef85924765,6550344d-7c19-4bb5-95ad-e97cfcee8c79,c7d6ffbb-617a-4867-8815-39552dee7a00,766483c2-c506-4bf0-8023-0d5b55143483,1fec037c-b33f-4cab-90ad-7987edba8a43,0b44a4db-2d94-471b-8b51-050e8569295f,93b32f02-e9e4-4d96-9f82-ee64dbc93646
+Inserted Fact IDs: 
+
+
+ERROR CONTACTS (0):
+
+
+=====================================

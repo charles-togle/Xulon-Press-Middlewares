@@ -355,6 +355,11 @@ for (const supabase_contact of supabase_bulk_data) {
       const defNotes = await createGhlNote(notes_payload, contact_id)
     }
 
+    const einstein_notes_payload = {
+      userId: 'JERtBepiajyLX1Pghv3T',
+      body: `Proposal Link: \n\n ${supabase_contact.einstein_url}`
+    }
+
     const einsteinNotes = await createGhlNote(
       einstein_notes_payload,
       contact_id

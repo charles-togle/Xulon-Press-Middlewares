@@ -1,0 +1,777 @@
+const data = 
+[
+    {
+           email:  rjgailis5589@gmail.com,   first_name:  Robin ,   last_name:  Galliot ,   phone:  (703) 203-9350 ,   zip_code:  22153 ,   writing_process:  I have finished writing my book ,   landing_page_id:  https://www.salemoffers.com/campaign/ready-to-publish  
+    },
+    {
+           email:  subasync@yahoo.com,   first_name:  Gary ,   last_name:  Brooks  ,   phone:  3149300431 ,   zip_code:  63113 ,   writing_process:  I have not started writing my book yet ,   landing_page_id:  https://www.salemoffers.com/campaign/ready-to-publish  
+    },
+    {
+           email:  Rlafave_2@msn.com,   first_name:  Rachel  ,   last_name:  Laso  ,   phone:  315-244-4072 ,   zip_code:  13642 ,   writing_process:  I would just like to hear about special offers ,   landing_page_id:  https://www.salemoffers.com/campaign/ready-to-publish  
+    },
+    {
+           email:  yellowbutterflysadie@yahoo.com,   first_name:  Sadie ,   last_name:  Atkins ,   phone:  6156530069 ,   zip_code:  38337 ,   writing_process:  I have not started writing my book yet ,   landing_page_id:  https://www.salemoffers.com/campaign/ready-to-publish  
+    },
+    {
+           email:  techapman1981@gmail.com ,   first_name:  Tiffany ,   last_name:  Cox ,   phone:  4347602765 ,   zip_code:  24551 ,   writing_process:  I have not started writing my book yet ,   landing_page_id:  https://www.salemoffers.com/campaign/ready-to-publish  
+    },
+    {
+           email:  henrypaige555@gmail.com ,   first_name:  Henry ,   last_name:  Paige ,   phone:  8322108618 ,   zip_code:  77449 ,   writing_process:  I have not started writing my book yet ,   landing_page_id:  https://www.salemoffers.com/campaign/ready-to-publish  
+    },
+    {
+           email:  sajordan810@yahoo.com ,   first_name:  Dr. Shelia ,   last_name:  Jordan ,   phone:  9193020453 ,   zip_code:  27715 ,   writing_process:  I would just like to hear about special offers ,   landing_page_id:  https://www.salemoffers.com/campaign/ready-to-publish  
+    },
+    {
+           email:  Audrey.stokesm@gmail.com ,   first_name:  Audrey ,   last_name:  Stokes ,   phone:  7692369566 ,   zip_code:  39350 ,   writing_process:  I have not started writing my book yet ,   landing_page_id:  https://www.salemoffers.com/campaign/ready-to-publish  
+    },
+    {
+           email:  Elaina.odie99@gmail.com ,   first_name:  Elaina ,   last_name:  Odroneic ,   phone:  3363399426 ,   zip_code:  27408 ,   writing_process:  I have not started writing my book yet ,   landing_page_id:  https://www.salemoffers.com/campaign/ready-to-publish  
+    },
+    {
+           email:  Elaina.odie99@gmail.com ,   first_name:  Elaina ,   last_name:  Odroneic ,   phone:  3363399426 ,   zip_code:  27408 ,   writing_process:  I have not started writing my book yet ,   landing_page_id:  https://www.salemoffers.com/campaign/ready-to-publish  
+    },
+    {
+           email:  THAI43@HOTMAIL.COM ,   first_name:  THAI ,   last_name:  NGUYEN ,   phone:  5037093682 ,   zip_code:  97086 ,   writing_process:  I have not started writing my book yet ,   landing_page_id:  https://www.salemoffers.com/campaign/ready-to-publish  
+    },
+    {
+           email:  stwrock@yahoo.com ,   first_name:  Gustavie ,   last_name:  Miller ,   phone:  7318033355 ,   zip_code:  38301 ,   writing_process:  I have not started writing my book yet ,   landing_page_id:  https://www.salemoffers.com/campaign/ready-to-publish  
+    },
+    {
+           email:  fariraigora@gmail.com ,   first_name:  'Fari' Farirai ,   last_name:  Gora ,   phone:  1-579-546-2222 ,   zip_code:  09166 ,   writing_process:  I will be finished writing in 6 months ,   landing_page_id:  https://www.salemoffers.com/campaign/ready-to-publish  
+    },
+    {
+           email:  fari@we-are-eden.com ,   first_name:  'Fari' Farirai ,   last_name:  Gora ,   phone:  1-579-546-2222 ,   zip_code:  09166 ,   writing_process:  I will be finished writing in 6 months ,   landing_page_id:  https://www.salemoffers.com/campaign/ready-to-publish  
+    },
+    {
+           email:  missannenra38@yahoo.com ,   first_name:  Anne ,   last_name:  Britton ,   phone:  4794665769 ,   zip_code:  72730 ,   writing_process:  I will be finished writing in 6 months ,   landing_page_id:  https://www.salemoffers.com/campaign/ready-to-publish  
+    },
+    {
+           email:  Chattycinderella@aol.com ,   first_name:  Deb ,   last_name:  Adams ,   phone:  3192707825 ,   zip_code:  52404 ,   writing_process:  I will be finished writing in 6 months ,   landing_page_id:  https://www.salemoffers.com/campaign/ready-to-publish  
+    },
+    {
+           email:  charlie122154@gmail.com ,   first_name:  Charles ,   last_name:  McQueary ,   phone:  8125714945 ,   zip_code:  47250 ,   writing_process:  I have not started writing my book yet ,   landing_page_id:  https://www.salemoffers.com/campaign/ready-to-publish  
+    },
+    {
+           email:  hopefortomorrowworldwide@gmail.com ,   first_name:  Lynette ,   last_name:  Bynum ,   phone:  (301) 404-8848 ,   zip_code:  20020 ,   writing_process:  I have not started writing my book yet ,   landing_page_id:  https://www.salemoffers.com/campaign/ready-to-publish  
+    },
+    {
+           email:  lauriecook111@gmail.com ,   first_name:  Laurie ,   last_name:  Cook ,   phone:  6133631890 ,   zip_code:  13201 ,   writing_process:  I have finished writing my book ,   landing_page_id:  https://www.salemoffers.com/campaign/ready-to-publish  
+    },
+    {
+           email:  cshearer1980@gmail.com ,   first_name:  Chantel ,   last_name:  Shearer ,   phone:  6236932333 ,   zip_code:  85308 ,   writing_process:  I have not started writing my book yet ,   landing_page_id:  https://www.salemoffers.com/campaign/ready-to-publish  
+    },
+    {
+           email:  destineestokes413@gmail.com ,   first_name:  Destinee ,   last_name:  Brown  ,   phone:  4137699104 ,   zip_code:  01109 ,   writing_process:  I will be finished writing in 90 days ,   landing_page_id:  https://www.salemoffers.com/campaign/ready-to-publish  
+    },
+    {
+           email:  saydielwright@gmail.com ,   first_name:  Ayisha ,   last_name:  Williams ,   phone:  4056378337 ,   zip_code:  73132 ,   writing_process:  I will be finished writing in 90 days ,   landing_page_id:  https://www.salemoffers.com/campaign/ready-to-publish  
+    },
+    {
+           email:  saydielwright@gmail.com ,   first_name:  Ayisha ,   last_name:  Williams ,   phone:  4056378337 ,   zip_code:  73132 ,   writing_process:  I will be finished writing in 90 days ,   landing_page_id:  https://www.salemoffers.com/campaign/ready-to-publish  
+    },
+    {
+           email:  yeager-hall@stny.rr.com ,   first_name:  scott ,   last_name:  hall ,   phone:  5702651014 ,   zip_code:  18840 ,   writing_process:  I have not started writing my book yet ,   landing_page_id:  https://www.salemoffers.com/campaign/ready-to-publish  
+    },
+    {
+           email:  Donaldclarke@hotmail.com ,   first_name:  Donald ,   last_name:  Clarke ,   phone:  3234998627 ,   zip_code:  34690 ,   writing_process:  I have not started writing my book yet ,   landing_page_id:  https://www.salemoffers.com/campaign/ready-to-publish  
+    },
+    {
+           email:  Donaldclarke@hotmail.com ,   first_name:  Donald ,   last_name:  Clarke ,   phone:  3234998627 ,   zip_code:  34690 ,   writing_process:  I have not started writing my book yet ,   landing_page_id:  https://www.salemoffers.com/campaign/ready-to-publish  
+    },
+    {
+           email:  1bluerose6@gmail.com ,   first_name:  Sherri ,   last_name:  Love ,   phone:  832-755-3303 ,   zip_code:  77338 ,   writing_process:  I have not started writing my book yet ,   landing_page_id:  https://www.salemoffers.com/campaign/ready-to-publish  
+    },
+    {
+           email:  Cynthiadbohanan@gmail.com ,   first_name:  Cynthia  ,   last_name:  Bohanan  ,   phone:  8659647714 ,   zip_code:  37863 ,   writing_process:  I would just like to hear about special offers ,   landing_page_id:  https://www.salemoffers.com/campaign/ready-to-publish  
+    },
+    {
+           email:  oneangelfor@yahoo.com ,   first_name:  Elizabeth ,   last_name:  Richards ,   phone:  6363332608 ,   zip_code:  63010 ,   writing_process:  I will be finished writing in 30 days ,   landing_page_id:  https://www.salemoffers.com/campaign/ready-to-publish  
+    },
+    {
+           email:  manuel.gomez.skg@gmail.com ,   first_name:  Manuel ,   last_name:  Gomez ,   phone:  9285093531 ,   zip_code:  85365 ,   writing_process:  I will be finished writing in 6 months ,   landing_page_id:  https://www.salemoffers.com/campaign/ready-to-publish  
+    },
+    {
+           email:  newtylertest@gmail.com ,   first_name:  TylerNew ,   last_name:  AmosNew ,   phone:  6155552536 ,   zip_code:  29605 ,   writing_process:  I will be finished writing in 6 months ,   landing_page_id:  https://www.salemoffers.com/campaign/ready-to-publish  
+    },
+    {
+           email:  tyler@vxlabs.co ,   first_name:  Tyler ,   last_name:  Amos ,   phone:  6156020218 ,   zip_code:  29605 ,   writing_process:  I will be finished writing in 30 days ,   landing_page_id:  https://www.salemoffers.com/campaign/ready-to-publish  
+    },
+    {
+           email:  septrtp@gmail.com ,   first_name:  septrtp ,   last_name:  septrtp ,   phone:  8042873839 ,   zip_code:  23838 ,   writing_process:  I have not started writing my book yet ,   landing_page_id:  https://www.salemoffers.com/campaign/ready-to-publish  
+    },
+    {
+           email:  testxulon@gmail.com ,   first_name:  testxulon ,   last_name:  testxulon ,   phone:  8042929944 ,   zip_code:  23838 ,   writing_process:  I have finished writing my book ,   landing_page_id:  https://www.salemoffers.com/campaign/ready-to-publish  
+    },
+    {
+         email : Bzlioness@gmail.com , first_name : Roberta , last_name : Coronel , phone : 8183912719 , zip_code : 91343 , writing_process : I will be finished writing in 90 days , landing_page_id : https://www.salemoffers.com/campaign/ready-to-publish 
+    },
+    {
+         email : colleencallisterlpc@yahoo.com , first_name : Colleen , last_name : Callister , phone : 214-232-2245 , zip_code : 76273 , writing_process : I have not started writing my book yet , landing_page_id : https://www.salemoffers.com/campaign/ready-to-publish 
+    },
+    {
+         email : Cvmoniot@gmail.com , first_name : Charles  , last_name : Moniot  , phone : 4404132765 , zip_code : 44312 , writing_process : I have finished writing my book , landing_page_id : https://www.salemoffers.com/campaign/ready-to-publish 
+    },
+    {
+         email : verenakemp@yahoo.com , first_name : Verena , last_name : Kemp-Nugent , phone : 5189861952 , zip_code : 12304 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : jer2911warrior@yahoo.com , first_name : Rosemarie , last_name : Bressi , phone : 8455423588 , zip_code : 27025 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : pknoxhardin@aol.com , first_name : Pam , last_name : Hardin , phone : 270 250 9425 , zip_code : 42728 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : stillherestillfighting1122@gmail.com , first_name : Christina , last_name : Gray , phone : 5409349487 , zip_code : 24019 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : levelsofintricacy@gmail.com , first_name : Jessica , last_name : Anderson , phone : 2816858760 , zip_code : 77021 , writing_process : I will be finished writing in 90 days ,landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : Dianehallam1000@gmail.com , first_name : Diane , last_name : Hallam , phone : 6108446420 , zip_code : 18080 , writing_process : I would like a FREE publishing consultation ,landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : Darnasia101@gmail.com , first_name : Darnasia , last_name : Faison , phone : 8047152782 , zip_code : 23075 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : Robin.wright@dignitymemorial.com , first_name : Robin , last_name : Wright , phone : 5712294748 , zip_code : 20169 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : hartshog@gmail.com , first_name : Garet , last_name : Hartshorn , phone : 4708139348 , zip_code : 30248 , writing_process : I would like a FREE publishing consultation , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : jgaitor115@gmail.com , first_name : Julie  , last_name : Gaitor , phone : 8643712583 , zip_code : 29644 , writing_process : I will be finished writing in 30 days , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : irocc.shining@gmail.com , first_name : Michael , last_name : Patton , phone : 4424617987 , zip_code : 92101 , writing_process : I have finished writing my book , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : jwsteele@aol.com , first_name : John , last_name : Steele , phone : 2108843949 , zip_code : 78245 , writing_process : I would like a FREE publishing consultation , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : sonya1975.ss@gmail.com , first_name : Sonya , last_name : Evans , phone : 2053633136 , zip_code : 35031 , writing_process : I have finished writing my book , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : margieot.1954@gmail.com , first_name : Margaret , last_name : Owen-Trowbridge , phone : 6206691700 , zip_code : 65737 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : j.jamieson67@gmail.com , first_name : Jacqueline , last_name : Jamieson , phone : 8089900934 , zip_code : 10128 , writing_process : I will be finished writing in 90 days , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish "
+    },
+    {
+         email : Srdouglas2003@yahoo.com , first_name : Shelia , last_name : Douglas , phone : 2295639645 , zip_code : 31602 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : gamms.org@gmail.com , first_name : Venus  , last_name : Johnson  , phone : 8033473022 , zip_code : 29093 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : Christe.joseph@icloud.com , first_name : Christe  , last_name : Joseph , phone :  447833334501 , zip_code : 00000 , writing_process : I will be finished writing in 30 days ,landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : Vmalits16@aol.com , first_name : Vivian  , last_name : Malits , phone : 4129565997 , zip_code : 15068 , writing_process : I will be finished writing in 6 months , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : sarchetdawne7@gmail.com , first_name : Dawne , last_name : Sarchet , phone : 5132383064 , zip_code : 45217 , writing_process : I would like a FREE publishing consultation , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish "
+    },
+    {
+         email : joyproducingtransformation@gmail.com , first_name : Jacquetta , last_name : Palmer , phone : 240-678-2104 , zip_code : 21054 , writing_process : I will be finished writing in 6 months , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : bmoz181@aol.com , first_name : barbara , last_name : mozingo , phone : 6676881484 , zip_code : 21234 , writing_process : I will be finished writing in 6 months , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : Ladyvknox@gmail.com , first_name : Vineesa , last_name : Knox , phone : 5135448762 , zip_code : 45224 , writing_process : I will be finished writing in 6 months , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : garrisjeffrey95@gmail.com , first_name : Jeffrey , last_name : Garris , phone : 5704863294 , zip_code : 17872 , writing_process : I would like a FREE publishing consultation , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : whenigrowup@yahoo.com , first_name : Queena , last_name : baldwin , phone : 8327188974 , zip_code : 77044 , writing_process : I will be finished writing in 6 months , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : crystalsimmons625@gmail.com , first_name : crystal , last_name : Simmons , phone : 3188207975 , zip_code : 71106 , writing_process : I have not started writing my book yet ,landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : crystalsimmons623@gmail.com , first_name : crystal , last_name : Simmons , phone : 3188207975 , zip_code : 71106 , writing_process : I would like a FREE publishing consultation , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : gospelboy59@gmail.com , first_name : James , last_name : Graham , phone : 7043099373 , zip_code : 28216 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : Ballardmaia@yahoo.com , first_name : Maia , last_name : Ballard , phone : 2163382367 , zip_code : 44123 , writing_process : I will be finished writing in 6 months , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : anewman0260@gmail.com , first_name : Darlene , last_name : Hartsfield , phone : 2678229804 , zip_code : 19151 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : debbyday7@icloud.com , first_name : Debby , last_name : At. at the moment , phone : 208-240-3626 , zip_code : 83201 , writing_process : I have finished writing my book , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : angelsrhere7x@gmail.com , first_name : Cynthia , last_name : Gaynor , phone : 5706560065 , zip_code : 24540 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : sherrygavonrep@gmail.com , first_name : Sherry , last_name : Griffith  , phone : 6019060162 , zip_code : 39119 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish "
+    },
+    {
+         email : Bingowarrior67@gmail.com , first_name : Victoria  , last_name : Castro , phone : 3252603040 , zip_code : 79602 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish "
+    },
+    {
+         email : Crystaltea980@gmail.com , first_name : Crystal  , last_name : Tease  , phone : 920 915-5308  , zip_code : 54171 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish "
+    },
+    {
+         email : phwaterwellness@gmail.com , first_name : Kathryn , last_name : MacDougall , phone : 5145858855 , zip_code : 10210 , writing_process : I would just like to hear about special offers , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : kenny7863@sbcglobal.net , first_name : Charlean , last_name : Harris , phone : 8324579212 , zip_code : 77484 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : Kmphillips84@icloud.com , first_name : Kelsey , last_name : Phillips , phone : 4056230525 , zip_code : 73122 , writing_process : I will be finished writing in 30 days , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : Nyshawn.007@gmail.com , first_name : Nyshawn  , last_name : Austin  , phone : 9197374446 , zip_code : 27603 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : nehemiyahthurman@rocketmail.comm , first_name : Dr Nehemiyah , last_name : Thurman ThD. , phone : 8475710333 , zip_code : 61114 , writing_process : I will be finished writing in 90 days , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : nehemiyahthurman@rocketmail.comm , first_name : Dr Nehemiyah , last_name : Thurman ThD. , phone : 8475710333 , zip_code : 61114 , writing_process : I will be finished writing in 90 days , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : sonjabarnes9@aol.com , first_name : Sonja , last_name : Barnes , phone : 316-641-3359 , zip_code : 67204 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : Rsteveandanne@gmail.com , first_name : Anne  , last_name : Ragland , phone : 8642704599 , zip_code : 29627 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : HD1GIL76@GMAIL.COM , first_name : Howard , last_name : Gilbert , phone : 3346505871 , zip_code : 36874 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : johntmiller000@gmail.com , first_name : John , last_name : Miller , phone : 8508611231 , zip_code : 32563 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : beautifulbeginningcc@gmail.com , first_name : Carla , last_name : White , phone : 3144970322 , zip_code : 63138 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish "
+    },
+    {
+         email : Zxuquuuxxxzzzqqq@biscoe.com , first_name : Vinnie , last_name : Vaccaro , phone : 5136331402 , zip_code : 45133 , writing_process : I will be finished writing in 6 months , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish "
+    },
+    {
+         email : savannahburnette1997@gmail.com , first_name : Savannah , last_name : Burnette , phone : 4173270045 , zip_code : 65613 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : joat0218@gmail.com , first_name : Ann , last_name : Davis  , phone : 9367664828 , zip_code : 75835 , writing_process : I have not started writing my book yet ,landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : missashleyj.aj@gmail.com , first_name : Ashley , last_name : Johnson , phone : 6124597076 , zip_code : 55129 , writing_process : I will be finished writing in 30 days , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : realisgood@gmail.com , first_name : Dennis , last_name : Diaz , phone : 5756440466 , zip_code : 88007 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : Wizzymac11@icloud.com , first_name : Amy , last_name : McGhee , phone : 251-396-0027 , zip_code : 36526 , writing_process : I will be finished writing in 90 days , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : alfredsbuckner25@gmail.com , first_name : Alfreda  , last_name : Buckner , phone : 9122712385 , zip_code : 31316 , writing_process : I have not started writing my book yet ,landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : patriciamiles651@gmail.com , first_name : Patricia , last_name : Miles , phone : 5044530859 , zip_code : 70128 , writing_process : I will be finished writing in 6 months , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish "
+    },
+    {
+         email : tennantrenee96@gmail.com , first_name : Renee , last_name : Tennant , phone : 5622449927 , zip_code : 90813 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : cjcseaman@googlemail.com , first_name : Caroline , last_name : Seaman , phone :  447548756734 , zip_code : 90510 , writing_process : I have not started writing my book yet ,landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : ChasityHarris537@gmail.com , first_name : Chasity , last_name : Harris , phone : 8653079388 , zip_code : 37914 , writing_process : I will be finished writing in 6 months , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish "
+    },
+    {
+         email : Joscjon@mail.regent.edu , first_name : Joscelyn  , last_name : Akadi , phone : 8046058898 , zip_code : 92583 , writing_process : I will be finished writing in 90 days , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : demilevet@gmail.com , first_name : Demitrice  , last_name : Venters  , phone : 281-814-8457  , zip_code : 77044 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish "
+    },
+    {
+         email : bynumcheryldianne@gmail.com , first_name : Cheryl Dianne  , last_name : Bynum , phone : 2528647817 , zip_code : 27852 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : skizzc@gmail.com , first_name : Jan , last_name : Caldwell , phone : 6825528283 , zip_code : 76248 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : computerguy44@yahoo.com , first_name : Jeff , last_name : West , phone : 4065709826 , zip_code : 59714 , writing_process : I will be finished writing in 6 months , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : dewaynebarton386@gmail.com , first_name : Melvin  , last_name : Barton  , phone : 4422708920 , zip_code : 92243 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish "
+    },
+    {
+         email : janeenesalmon@yahoo.com , first_name : Janeene , last_name : Salmon  , phone : 9196082464 , zip_code : 27614 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : ewpjgp05@gmail.com , first_name : Evan , last_name : Phillips , phone : 501-358-6676, zip_code : 72032 , writing_process : I have not started writing my book yet, landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish
+    },
+    {
+         email : Paristimothy508@gmail.com , first_name : Timothy , last_name : Paris , phone : 443-774-4805  , zip_code : 21811 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish "
+    },
+    {
+         email : days_francis@yahoo.com , first_name : Francis , last_name : Days Sellers , phone : 9104993466 , zip_code : 28463 , writing_process : I have not started writing my book yet ,landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : B3cutshall@yahoo.com  , first_name : Bobbye  , last_name : Cutshall  , phone : 563-299-0503 , zip_code : 72601 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish "
+    },
+    {
+         email : Mrmburpo45@aol.com , first_name : Michael  , last_name : Burpo  , phone : 2104753364 , zip_code : 78124 , writing_process : I would like a FREE publishing consultation , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : drjscooke@gmail.com , first_name : Janette , last_name : Cooke , phone : 2089547600 , zip_code : 83642 , writing_process : I will be finished writing in 30 days , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : kkparr@duck.com , first_name : Karen , last_name : Parr , phone : 1 540-207-2413 , zip_code : 22405 , writing_process : I would just like to hear about special offers , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : schulte.douglase@gmail.com , first_name : Douglas , last_name : Schulte , phone : 9714139322 , zip_code : 95404 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish "
+    },
+    {
+         email : joe.frederick.cowhick@gmail.com , first_name : Joe , last_name : Cowhick , phone : 2178608866 , zip_code : 62711 , writing_process : I have not started writing my book yet ,landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : lynell.foy77@gmail.com , first_name : Lynell , last_name : Foy , phone : 8045392208 , zip_code : 23831 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : ldip777@protonmail.com , first_name : Lorie  , last_name : Di Palma  , phone : 514-604-4322  , zip_code : 99999 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish "
+    },
+    {
+         email : Dj2245@ymail.com , first_name : DJ  , last_name : Bryant  , phone : 3027822245 , zip_code : 19703 , writing_process : I will be finished writing in 6 months , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : etownsend@sweepingcorp.com , first_name : Elizabeth , last_name : Townsend , phone : 4403819875 , zip_code : 44135 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : TiffanyRJackson@aol.com , first_name : Tiffany  , last_name : Jackson  , phone : 5139757526 , zip_code : 45011 , writing_process : I have finished writing my book , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : Gunter_425@hotmail.com , first_name : Paul , last_name : Gunter , phone : 8708977047 , zip_code : 72404 , writing_process : I have finished writing my book , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : janicedhales@gmail.com , first_name : Janice  , last_name : Hales , phone : 601-580-8399 , zip_code : 39443 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : latasha221@gmail.com , first_name : latasha , last_name : jefferson , phone : 6012489698 , zip_code : 39648 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : ecjeremiah2911@gmail.com , first_name : Evelyn , last_name : Cannon , phone : 8565582513 , zip_code : 08360 , writing_process : I will be finished writing in 6 months , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : darlive@live.com , first_name : Darcy , last_name : Rossignol , phone : 5189896847 , zip_code : 12452 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : maryreid903@gmail.com , first_name : Mary , last_name : Amador , phone : 9039414311 , zip_code : 75766 , writing_process : I would just like to hear about special offers , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish "
+    },
+    {
+         email : hornebrittany1989@gmail.com , first_name : Brittany , last_name : Horne , phone : 8032925639 , zip_code : 29834 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish "
+    },
+    {
+         email : Gracebyfaithgifts@gmail.com , first_name : Barbara  , last_name : Pierce  , phone : 719-492-8755  , zip_code : 80917 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : Practicalherbs@gmail.com , first_name : Barbara  , last_name : Pierce  , phone : 719-492-8755  , zip_code : 80917 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish "
+    },
+    {
+         email : adavis1@jcboe.net , first_name : Angela , last_name : Davis , phone : 4237487512 , zip_code : 37877 , writing_process : I will be finished writing in 90 days ,landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : jce235@yahoo.com , first_name : chinyere , last_name : ezeigbo , phone : 2722023310 , zip_code : 20879 , writing_process : I will be finished writing in 90 days , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : parkni101@gmail.com , first_name : Carlone , last_name : Parris , phone : 7026663410 , zip_code : 89031 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : Trinajacksonjpdmts@gmail.com , first_name : Trina  , last_name : Jackson  , phone : 832.921.3701 , zip_code : 77346 , writing_process : I will be finished writing in 90 days , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : Jpdmmedia@gmail.com , first_name : Trina  , last_name : Jackson  , phone : 832.921.3701 , zip_code : 77346 , writing_process : I will be finished writing in 6 months , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : joelgarcia1587@gmail.com , first_name : Alex  , last_name : Garcia , phone : 3475892854 , zip_code : 11208 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : Jonesecho90@gmail.com , first_name : ECHO , last_name : JONES , phone : 4172215265 , zip_code : 65686 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : bsybsgarden@gmail.com , first_name : Colleen , last_name : Gaynor  , phone : 9493975871 , zip_code : 92630 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : Lutherbailey1953@gmail.com , first_name : Luther , last_name : Bailey , phone : 4237914278 , zip_code : 37602 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : belovedchildofking@yahoo.com , first_name : Elizabeth  , last_name : Igartua  , phone : 7728958131 , zip_code : 60641 , writing_process : I would like a FREE publishing consultation , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : Wydauzat16@gmail.com , first_name : Wyatt , last_name : Dauzat , phone : 430-261-3865 , zip_code : 75570 , writing_process : I would like a FREE publishing consultation , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : Wydauzat16@gmail.com , first_name : Wyatt , last_name : Dauzat , phone : 430-261-3865 , zip_code : 75570 , writing_process : I would like a FREE publishing consultation , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : shawnbethkennedy@gmail.com , first_name : Shawn , last_name : Kennedy , phone : 6084734797 , zip_code : 53719 , writing_process : I will be finished writing in 6 months , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : ralphgillon96@gmail.com , first_name : Ralph  , last_name : Gillon  , phone : 7169902111 , zip_code : 14301 , writing_process : I would like a FREE publishing consultation ,landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : valeridalton06@yahoo.com , first_name : Valeria , last_name : Lambert , phone : 6092252946 , zip_code : 08068 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : gmama4lfe@gmail.com , first_name : Bonnie , last_name : Murray , phone : 7024432476 , zip_code : 89115 , writing_process : I would like a FREE publishing consultation , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : mariafung@comcast.net , first_name : Maria , last_name : Fung , phone : 9253806115 , zip_code : 94582 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : nutritionchristian@gmail.com , first_name : Chris , last_name : Rodgers , phone : 7202911112 , zip_code : 81423 , writing_process : I would like a FREE publishing consultation , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : 373tamara373@gmail.com , first_name : Tamara , last_name : Dorozhivskaya , phone : (808) 301-3311 , zip_code : 96815 , writing_process : I will be finished writing in 6 months , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : latausha4040@icloud.com , first_name : Latausha , last_name : Buckley , phone : 3468212429 , zip_code : 77346 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : k.eleanya@live.com , first_name : Kelechi , last_name : ELEanya , phone : 4754340829 , zip_code : 06511 , writing_process : I will be finished writing in 90 days , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : chocodrop01@icloud.com , first_name : Lucinda , last_name : Marshall , phone : 443-735-6607 , zip_code : 21801 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish "
+    },
+    {
+         email : Sheilaoshay@gmail.com , first_name : Sheila , last_name : Oshay , phone : 503-325-1333 , zip_code : 97103 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : jjones1905@aol.com , first_name : JAMES , last_name : JONES , phone : 9103224262 , zip_code : 28312 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : dhudley3@gmail.com , first_name : Doris , last_name : Hudley , phone : 8624138106 , zip_code : 07501 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : Ladydj.bbg@gmail.com , first_name : Diane  , last_name : Irving , phone : 9733364314 , zip_code : 76542 , writing_process : I will be finished writing in 30 days , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : chazden.tyer06@gmail.com , first_name : Chazden , last_name : Tyer , phone : 9369337430 , zip_code : 77351 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : sammenme@wavecable.com , first_name : Esther , last_name : Smith , phone : 3609268050 , zip_code : 98282 , writing_process : I would just like to hear about special offers ,landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : Johnson.gary2465@gmail.com , first_name : Gary , last_name : Johnson , phone : 763-232-6689 , zip_code : 55421 , writing_process : I will be finished writing in 6 months , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish "
+    },
+    {
+         email : rosa.jenkins.2@icloud.com , first_name : Rosa , last_name : Jenkins , phone : 5753099052 , zip_code : 88101 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : yichoiah431819@gmail.com , first_name : Michael , last_name : Wu , phone : 6263199143 , zip_code : 91780 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : Vedatapia114@gmail.com , first_name : Veda , last_name : Tapia , phone : 9163001127 , zip_code : 95678 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : Kilpatrick.wilson@yahoo.com , first_name : Kilpatrick , last_name : Wilson , phone : 8134585378 , zip_code : 34221 , writing_process : I would just like to hear about special offers , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : rcw7778@outlook.com , first_name : Robert , last_name : Wilkinson , phone : 406 593 0330 , zip_code : 59632 , writing_process : I would just like to hear about special offers ,landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : bobfeller88@gmail.com , first_name : Robert , last_name : Feller , phone : 2153132448 , zip_code : 19454 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : yfraraccio@gmail.com , first_name : Yvonne , last_name : Fraraccio , phone : (770)876-8990 , zip_code : 30075 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : Junef721@comcast.net , first_name : June , last_name : Fischbach , phone : 7742541843 , zip_code : 02703 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : latoyrarainey318@gmail.com , first_name : LATOYRA , last_name : RAINEY , phone : 2673280892 , zip_code : 19132 , writing_process : I would like a FREE publishing consultation ,landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : freda.toler@gmail.com , first_name : Elfreda , last_name : Toler , phone : 2056090688 , zip_code : 35470 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : freda.toler@gmail.com , first_name : Elfreda , last_name : Toler , phone : 2056090688 , zip_code : 35470 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : freda.toler@gmail.com , first_name : Elfreda , last_name : Toler , phone : 2056090688 , zip_code : 35470 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : pathoskins52@gmail.com , first_name : Patricia , last_name : Hoskins , phone : 4157243158 , zip_code : 94112 , writing_process : I would like a FREE publishing consultation , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish "
+    },
+    {
+         email : coneylinda48@gmail.com , first_name : Linda , last_name : Coney , phone : 9859007140 , zip_code : 70401 , writing_process : I have finished writing my book , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : jryneaa2@gmail.com , first_name : Jessica , last_name : Apperson , phone : 9076300089 , zip_code : 99610 , writing_process : I will be finished writing in 6 months , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : romeoatanacio@gmail.com , first_name : Romeo , last_name : Atanacio , phone : 9493048584 , zip_code : 90713 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : norsocalifornia@gmail.com , first_name : RJ , last_name : Chatman , phone : 9165834373 , zip_code : 94505 , writing_process : I will be finished writing in 30 days , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : Emailherbjr@gmail.com , first_name : Herbert C , last_name : Rodriguez Jr , phone : 4074434322 , zip_code : 34473 , writing_process : I will be finished writing in 6 months , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish "
+    },
+    {
+         email : glmonroe956@gmail.com , first_name : Glen , last_name : Monroe , phone : 2052662500 , zip_code : 35127 , writing_process : I would like a FREE publishing consultation , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : jujumcallister@gmail.com , first_name : Judie , last_name : McAllister , phone : 7062470657 , zip_code : 30628 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish "
+    },
+    {
+         email : twemailupdates@gmail.com , first_name : Patsy , last_name : Woods , phone : 7622002930 , zip_code : 30019 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : baileyjessica30@gmail.com , first_name : Jessica , last_name : Bailey , phone : 4785950871 , zip_code : 31021 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : baileyjessica30@gmail.com , first_name : Jessica , last_name : Bailey , phone : 4785950871 , zip_code : 31021 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : bmwade8839@gmail.com , first_name : Bonnie M , last_name : Wade , phone : 3149132993 , zip_code : 63367 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : Lolita.allen@gmail.com , first_name : Lolita  , last_name : Allen  , phone : 5034753114 , zip_code : 98662 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : Angelinareynosobusiness@gmail.com , first_name : Angelina , last_name : Reynoso , phone : 3477533252 , zip_code : 21201 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : lindamills236@gmail.com , first_name : Linda , last_name : Mills , phone : 337-265-5411 , zip_code : 70529 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : robinbrewster538@gmail.com , first_name : Robin , last_name : Brewster , phone : 7049425607 , zip_code : 28056 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish "
+    },
+    {
+         email : Marlonvaldez1986@gmail.com , first_name : Marlon , last_name : Valdez , phone : 845-5179117 , zip_code : 10977 , writing_process : I will be finished writing in 30 days , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : Kads1213@knology.net , first_name : Kenneth D , last_name : Scott , phone : 3343288789 , zip_code : 36116 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : asoutreach@gmail.com , first_name : Sonja , last_name : Bowe , phone : 4049334083 , zip_code : 30238 , writing_process : I have finished writing my book , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : ruvette.permaul@gmail.com , first_name : Ruvette , last_name : Permaul , phone : 3863202834 , zip_code : 32763 , writing_process : I will be finished writing in 90 days , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : cbubba27@yahoo.com , first_name : Oliver , last_name : Carter , phone : 8326901067 , zip_code : 77357 , writing_process : I would like a FREE publishing consultation , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : Pxbarro1@gmail.com , first_name : Patricia , last_name : Barron , phone : 712-539-9917 , zip_code : 46815 , writing_process : I will be finished writing in 6 months , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : lanzpurcell@gmail.com , first_name : Maylan  , last_name : Fuauli  , phone :  61423326189  , zip_code : 90210 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : livewire101_24@hotmail.com , first_name : Deeann , last_name : Powe , phone : 9313206347 , zip_code : 30180 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : mommi2rooty@gmail.com , first_name : Lori , last_name : Reed , phone : 5133176662 , zip_code : 45140 , writing_process : I will be finished writing in 6 months , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : cainsbrother@gmail.com , first_name : ABEL , last_name : ABRAHA , phone : 9842549704 , zip_code : 28213 , writing_process : I would like a FREE publishing consultation , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : reneranzy@gmail.com , first_name : Rene  , last_name : Ranzy  , phone : 6512409938 , zip_code : 55077 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : Mzdime@hotmail.co.uk , first_name : Ri , last_name : Ru , phone : 148999999631 , zip_code : 92164 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : rwilliamsjune@yahoo.com , first_name : Robert , last_name : England , phone : 4252996351 , zip_code : 78754 , writing_process : I would just like to hear about special offers ,landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : Jimbright58@gmail.com , first_name : James  , last_name : Bright , phone : (616) 443-6045 , zip_code : 49326 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : skc94@aol.com , first_name : Charles  , last_name : SUDDETH SR. , phone : 937 237 8475 , zip_code : 45424 , writing_process : I would like a FREE publishing consultation , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish "
+    },
+    {
+         email : jlhanohano@yahoo.com , first_name : Joy , last_name : Modesto , phone : 8087410891 , zip_code : 23669 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : kimberleebush12@gmail.com , first_name : Kimberlee , last_name : Bush , phone : 7162604575 , zip_code : 33032 , writing_process : I would like a FREE publishing consultation , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : akeleahkillings@gmail.com , first_name : Akeleah , last_name : Killings , phone : 5033580932 , zip_code : 37040 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish "
+    },
+    {
+         email : Iscribe66@outlook.com , first_name : James  , last_name : Horton  , phone : 555 555 5555 , zip_code : 55555 , writing_process : I will be finished writing in 6 months , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : tracybrock2@gmail.com , first_name : Tracy , last_name : Brock , phone : 2057731224 , zip_code : 35061 , writing_process : I will be finished writing in 6 months , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : mlewis2223@yahoo.com , first_name : Molly , last_name : Lewis , phone : 9098551662 , zip_code : 92324 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : karenhenry46@icloud.com , first_name : karen , last_name : woodbury , phone : 2153002189 , zip_code : 19111 , writing_process : I will be finished writing in 6 months , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : 3john4nogreaterjoy@gmail.com , first_name : Sarah , last_name : Beam , phone : 7048406960 , zip_code : 28269 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : sandicovington@hotmail.com , first_name : Sandra , last_name : Covington , phone : 2059033072 , zip_code : 35064 , writing_process : I have not started writing my book yet ,landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : Belindaprice007@yahoo.com , first_name : Belinda  , last_name : Price  , phone : 806 544 1274  , zip_code : 76086 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish "
+    },
+    {
+         email : kwhite1213@gmail.com , first_name : Kimberly , last_name : Tolbert , phone : 6788878199 , zip_code : 30273 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : theholybible@gmail.com , first_name : Nathaniel  , last_name : Mccants Jr And miracle ministry of hesvebj , phone : 8438067588 , zip_code : 29405 , writing_process : I would like a FREE publishing consultation, landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish 
+    },
+    {
+         email : lethia775@gmail.com , first_name : Lethia , last_name : Gadison , phone : 3462408782 , zip_code : 77053 , writing_process : I have not started writing my book yet, landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : dpl2@gmx.com , first_name : Derrek , last_name : Clayton , phone : 9036475699 , zip_code : 75020 , writing_process : I will be finished writing in 6 months, landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish"
+    },
+    {
+         email : amanda@alsheds.com , first_name : Amanda , last_name : Sparks , phone : 3465502575 , zip_code : 77429 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : Firemedicjoe26@gmail.com , first_name : Joseph , last_name : McClellan , phone : 8139093378 , zip_code : 34669 , writing_process : I will be finished writing in 6 months , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish "
+    },
+    {
+         email : Marco23bm@gmail.com , first_name : Marco , last_name : Ballesteros , phone : 5027278504 , zip_code : 40503 , writing_process : I will be finished writing in 6 months , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : abhyonagrant@gmail.com , first_name : Abhyona , last_name : Grant , phone : 8636761411 , zip_code : 33884 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : leah.alexis737@gmail.com , first_name : Leah , last_name : Alexis , phone : 8503002444 , zip_code : 32301 , writing_process : I will be finished writing in 90 days , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : Jamielynn88@live.com , first_name : Jamie , last_name : Christian , phone : 8168965062 , zip_code : 64055 , writing_process : I will be finished writing in 6 months , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : andre15815@yahoo.com , first_name : ANDRE , last_name : Johnson , phone : 8326070997 , zip_code : 77073 , writing_process : I will be finished writing in 30 days , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : malcolmsmith12@yahoo.com , first_name : Malcolm , last_name : Smith , phone : 8622024272 , zip_code : 07017 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : bufordcatt@gmail.com , first_name : Catherine , last_name : Buford , phone : 615-925-9291 , zip_code : 37042 , writing_process : I have finished writing my book , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : bribrinicole88@gmail.com , first_name : Brianna , last_name : Sloan , phone : 2196173855 , zip_code : 46401 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : Vanecia.oliver@yahoo.com , first_name : Vanecia , last_name : Oliver , phone : 3412284969 , zip_code : 94560 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : Whnicholson1978@gmail.com , first_name : William , last_name : Nicholson , phone : 9195248257 , zip_code : 27581 , writing_process : I have not started writing my book yet ,landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : Alexperosi@yahoo.com , first_name : Alexandra , last_name : Perosi , phone : 3479370630 , zip_code : 10314 , writing_process : I will be finished writing in 90 days , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : ty13rsllc@gmail.com  , first_name : Elliott , last_name : Tyler , phone : 8165648053 , zip_code : 64137 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : alashia.blake@acsk12.net , first_name : alashia , last_name : blake , phone : 2563070049 , zip_code : 35010 , writing_process : I would like a FREE publishing consultation ,landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : arrianna.stewart@yahoo.com , first_name : ARRIANNA , last_name : STEWART , phone : 5743343304 , zip_code : 60649 , writing_process : I will be finished writing in 6 months ,landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : arrianna.stewart@yahoo.com , first_name : ARRIANNA , last_name : STEWART , phone : 5743343304 , zip_code : 60649 , writing_process : I will be finished writing in 6 months ,landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : tameshajohnson484@gmail.com , first_name : Tamesha , last_name : davis , phone : 9362801985 , zip_code : 75935 , writing_process : I have finished writing my book , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : ralph.dantley57@gmail.com , first_name : ralph , last_name : dantley , phone : 2029570539 , zip_code : 20010 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : Courtneyvdaniel@gmail.com , first_name : Courtney , last_name : Daniel , phone : 8319171427 , zip_code : 78109 , writing_process : I will be finished writing in 6 months , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish "
+    },
+    {
+         email : moregraceandu@gmail.com , first_name : Shirley  , last_name : Davis , phone : 3312809740 , zip_code : 60446 , writing_process : I will be finished writing in 30 days , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : jeffressbill@gmail.com , first_name : William , last_name : Jeffress , phone : 9403414232 , zip_code : 76306 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : tucciw7@gmail.com , first_name : Matthew , last_name : Tucci , phone : 7812178285 , zip_code : 02121 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : levert06@aol.com , first_name : Levert  , last_name : Hedgemon , phone : 2056140458 , zip_code : 35405 , writing_process : I have finished writing my book , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : Angel_ponce@yahoo.com , first_name : Angel , last_name : Ponce , phone : 9175930275 , zip_code : 06830 , writing_process : I will be finished writing in 6 months , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : snj5117@yahoo.com , first_name : Jeanne , last_name : DeLessio , phone : 2034560136 , zip_code : 06611 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : angelamichelle39@yahoo.com , first_name : Angela , last_name : Davis , phone : 9723753352 , zip_code : 75134 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : giftsandcalling@gmail.com , first_name : Adrienne , last_name : Jones , phone : 2028268126 , zip_code : 20745 , writing_process : I will be finished writing in 6 months , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : Junelynnsmith@gmail.com , first_name : June , last_name : Smith , phone : 516-851-4548 , zip_code : 11590 , writing_process : I would like a FREE publishing consultation , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish "
+    },
+    {
+         email : jtalerico@pitt.edu , first_name : James , last_name : Talerico , phone : 4125551212 , zip_code : 15237 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : Josiah.burden@aol.com , first_name : Josiah , last_name : Burden , phone : 4704170775 , zip_code : 32218 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : addisonregina64@gmail.com , first_name : Regina , last_name : Addison , phone : 7132890316 , zip_code : 77093 , writing_process : I would like a FREE publishing consultation , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : jmccoy000@gmail.com , first_name : JoAnn  , last_name : McCoy  , phone : 678-353-9196  , zip_code : 62205 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : rdaniels24v@gmail.com , first_name : Vanessa , last_name : McEntire , phone : 6785996330 , zip_code : 30135 , writing_process : I will be finished writing in 6 months , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : love247him@yahoo.com , first_name : Felicia , last_name : DeBerry , phone : 660-238-7800 , zip_code : 73170 , writing_process : I would like a FREE publishing consultation ,landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : cwhoim@live.com , first_name : Serah YoLinda , last_name : Belmont , phone : 6164068864 , zip_code : 49507 , writing_process : I have finished writing my book , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : feleciajackson94@gmail.com , first_name : Felecia , last_name : Jackson , phone : 6097701170 , zip_code : 08046 , writing_process : I will be finished writing in 30 days , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish "
+    },
+    {
+         email : lmacmill17@gmail.com , first_name : Linda  , last_name : McBridemiller  , phone : 8084942022 , zip_code : 96772 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish "
+    },
+    {
+         email : Lroberts728@yahoo.com , first_name : LaShaun  , last_name : Roberts  , phone : 7575339065 , zip_code : 23504 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : shammariahbelin@yahoo.com , first_name : Keturah , last_name : Belin , phone : 8432453174 , zip_code : 29161 , writing_process : I will be finished writing in 90 days , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : doylejulz@gmail.com , first_name : Julia , last_name : Doyle , phone : 5393452432 , zip_code : 74437 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : happy7717@yahoo.com , first_name : Porshia , last_name : Bernard , phone : 443-420-2225 , zip_code : 21206 , writing_process : I will be finished writing in 30 days , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : acculingua@gmail.com , first_name : Orlando  , last_name : Gonzalez  , phone : 8646167380 , zip_code : 29650 , writing_process : I will be finished writing in 30 days , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : robertmechling1@gmail.com , first_name : Robert , last_name : mechling , phone : 7148047329 , zip_code : 92867 , writing_process : I will be finished writing in 30 days , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : anthony.jarrett@virtualmilitaryministry.com , first_name : Anthony , last_name : Jarrett , phone : 7044979994 , zip_code : 28518 , writing_process : I would just like to hear about special offers, landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish" 
+    },
+    {
+         email : amanda.adams1908@yahoo.com , first_name : Amanda , last_name : Adams Crump , phone : 8129132918 , zip_code : 47172 , writing_process : I have not started writing my book yet , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish"
+    },
+    {
+         email : dariawilson@ymail.com , first_name : Daria , last_name : Wilson , phone : 3109382624 , zip_code : 95356 , writing_process : I will be finished writing in 6 months , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    },
+    {
+         email : tjoseph37@yahoo.com , first_name : Thomas , last_name : Murphy , phone : 4105306542 , zip_code : 20794 , writing_process : I have finished writing my book , landing_page_id:https://www.salemoffers.com/campaign/ready-to-publish  "
+    }
+]

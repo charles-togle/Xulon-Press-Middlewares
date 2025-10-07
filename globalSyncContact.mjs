@@ -20,7 +20,9 @@ const renderStatus = () => {
       ? lastProcessedContact.replace(/\n/g, ' ').slice(0, 80)
       : 'N/A'
   const line = `[Page ${currPage} | Limit ${PAGE_LIMIT}] Processed: ${processedContacts} | Errors: ${errorContacts.length} (API: ${apiLimitErrors}) | Last: ${lastSummary}`
-  const pad = ' '.repeat(Math.max(0, Math.max(lastStatus.length - line.length, 0) + 5))
+  const pad = ' '.repeat(
+    Math.max(0, Math.max(lastStatus.length - line.length, 0) + 5)
+  )
   lastStatus = line
   // carriage return without newline to keep a single live line
   process.stdout.write(`\r${line}${pad}`)
@@ -28,7 +30,9 @@ const renderStatus = () => {
 const noteApiLimit = (where = 'unknown') => {
   apiLimitErrors++
   // Print a short alert, then re-render the status line
-  process.stdout.write(`\n(${processedContacts}/?) API Limit Count Error Found (HTTP 429) at ${where}\n`)
+  process.stdout.write(
+    `\n(${processedContacts}/?) API Limit Count Error Found (HTTP 429) at ${where}\n`
+  )
   renderStatus()
 }
 
@@ -45,11 +49,11 @@ const START_PAGE = Number(getArg('start-page', process.env.START_PAGE || 1))
 const PAGE_LIMIT = Number(getArg('page-limit', process.env.PAGE_LIMIT || 500))
 // Safe concurrency to avoid API rate limits; tune as needed
 const CONCURRENCY = Number(
-  getArg('concurrency', process.env.CONCURRENCY || 8)
+  getArg('concurrency', process.env.CONCURRENCY || 100)
 )
 
 // Simple promise pool for per-page parallelism
-async function promisePool(items, worker, concurrency) {
+async function promisePool (items, worker, concurrency) {
   let i = 0
   const runners = Array.from({ length: Math.max(1, concurrency) }, async () => {
     while (true) {
@@ -141,7 +145,10 @@ ${errorContacts.map((error, index) => `${index + 1}. ${error}`).join('\n')}
     const parseErrorLine = line => {
       // Expected format:
       // Name: <name>, Email <email>, ContactID: <id>, Reason: <reason>
-      let name = '', email = '', contactId = '', reason = ''
+      let name = '',
+        email = '',
+        contactId = '',
+        reason = ''
       try {
         const nameMatch = line.match(/Name:\s*([^,]+)/)
         const emailMatch = line.match(/Email\s+([^,]+)/)
@@ -161,7 +168,12 @@ ${errorContacts.map((error, index) => `${index + 1}. ${error}`).join('\n')}
     const csv = [header.join(',')]
       .concat(
         rows.map(r =>
-          [escapeCsv(r.name), escapeCsv(r.email), escapeCsv(r.contactId), escapeCsv(r.reason)].join(',')
+          [
+            escapeCsv(r.name),
+            escapeCsv(r.email),
+            escapeCsv(r.contactId),
+            escapeCsv(r.reason)
+          ].join(',')
         )
       )
       .join('\n')
@@ -306,7 +318,9 @@ do {
   try {
     const { contacts } = await searchGhlContact(currPage, searchAfter)
     currContactPage = contacts
-    console.log(`Page ${currPage}: Found ${contacts.length} Contacts (limit=${PAGE_LIMIT})`)
+    console.log(
+      `Page ${currPage}: Found ${contacts.length} Contacts (limit=${PAGE_LIMIT})`
+    )
     renderStatus()
     totalContacts += contacts.length
 
@@ -320,7 +334,9 @@ do {
         .in('ghl_contact_id', pageContactIds)
       if (existingErr) {
         throw new Error(
-          `Error checking contacts existence in supabase: ${JSON.stringify(existingErr)}`
+          `Error checking contacts existence in supabase: ${JSON.stringify(
+            existingErr
+          )}`
         )
       }
       existingIds = (existingRows || []).map(r => r.ghl_contact_id)
@@ -390,7 +406,9 @@ do {
                 p_first_name: currContact.firstName ?? null,
                 p_last_name: currContact.lastName ?? null,
                 p_email: currContact.email ?? null,
-                p_phone_number: currContact.phone ?? null,
+                p_phone_number: currContact.phone
+                  ? currContact.phone.trim()
+                  : null,
                 p_full_address: fullAddress,
                 p_address_line1: currContact.address1 ?? null,
                 p_address_line2: null,
@@ -445,7 +463,9 @@ do {
                 p_first_name: currContact.firstName ?? null,
                 p_last_name: currContact.lastName ?? null,
                 p_email: currContact.email ?? null,
-                p_phone_number: currContact.phone ?? null,
+                p_phone_number: currContact.phone
+                  ? currContact.phone.trim()
+                  : null,
                 p_full_address: fullAddress,
                 p_address_line1: currContact.address1 ?? 'Unprovided',
                 p_address_line2: null,
@@ -465,11 +485,11 @@ do {
                 p_current_author: false,
                 p_publisher: publisher,
                 p_publishing_writing_process_stage: 'Unprovided',
-                p_genre: null,
+                p_genre: [],
                 p_book_description: null,
                 p_writing_status: null,
-                p_rating: null,
-                p_pipeline_stage: null,
+                p_rating: 'Unknown',
+                p_pipeline_stage: 'Unknown',
                 p_stage_id: null,
                 p_pipeline_id: null,
 

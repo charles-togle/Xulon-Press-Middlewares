@@ -34,18 +34,22 @@ const renderStatus = () => {
       ? lastProcessedContact.replace(/\n/g, ' ').slice(0, 80)
       : 'N/A'
   const line = `[Page ${currPage} | Limit ${PAGE_LIMIT}] Processed: ${processedOpportunities} | Errors: ${errorOpportunities.length} (API: ${apiLimitErrors}) | Last: ${lastSummary}`
-  const pad = ' '.repeat(Math.max(0, Math.max(lastStatus.length - line.length, 0) + 5))
+  const pad = ' '.repeat(
+    Math.max(0, Math.max(lastStatus.length - line.length, 0) + 5)
+  )
   lastStatus = line
   process.stdout.write(`\r${line}${pad}`)
 }
 const noteApiLimit = (where = 'unknown') => {
   apiLimitErrors++
-  process.stdout.write(`\n(${processedOpportunities}/?) API Limit Count Error Found (HTTP 429) at ${where}\n`)
+  process.stdout.write(
+    `\n(${processedOpportunities}/?) API Limit Count Error Found (HTTP 429) at ${where}\n`
+  )
   renderStatus()
 }
 
 // Simple promise pool for per-page parallelism
-async function promisePool(items, worker, concurrency) {
+async function promisePool (items, worker, concurrency) {
   let i = 0
   const runners = Array.from({ length: Math.max(1, concurrency) }, async () => {
     while (true) {
@@ -146,7 +150,11 @@ ${insertedFactIDS.map((id, index) => `${index + 1}. ${id}`).join('\n')}
     }
     const parseErrorLine = line => {
       // Expected: Name: <name>, Email <email>, ContactID: <contactId>, Opportunity ID: <oppId> Reason: <reason>
-      let name = '', email = '', contactId = '', opportunityId = '', reason = ''
+      let name = '',
+        email = '',
+        contactId = '',
+        opportunityId = '',
+        reason = ''
       try {
         const nameMatch = line.match(/Name:\s*([^,]+)/)
         const emailMatch = line.match(/Email\s+([^,]+)/)
@@ -168,7 +176,13 @@ ${insertedFactIDS.map((id, index) => `${index + 1}. ${id}`).join('\n')}
     const csv = [header.join(',')]
       .concat(
         rows.map(r =>
-          [escapeCsv(r.name), escapeCsv(r.email), escapeCsv(r.contactId), escapeCsv(r.opportunityId), escapeCsv(r.reason)].join(',')
+          [
+            escapeCsv(r.name),
+            escapeCsv(r.email),
+            escapeCsv(r.contactId),
+            escapeCsv(r.opportunityId),
+            escapeCsv(r.reason)
+          ].join(',')
         )
       )
       .join('\n')
@@ -403,7 +417,9 @@ do {
         .select('ghl_contact_id')
         .in('ghl_contact_id', pageContactIds)
       if (existingErr) {
-        throw new Error(`Error checking contacts existence: ${JSON.stringify(existingErr)}`)
+        throw new Error(
+          `Error checking contacts existence: ${JSON.stringify(existingErr)}`
+        )
       }
       existingIds = (existingRows || []).map(r => r.ghl_contact_id)
     }
@@ -442,7 +458,9 @@ do {
             })
           if (pipelineNamesError) {
             throw new Error(
-              `Error getting pipeline names: ${JSON.stringify(pipelineNamesError)}`
+              `Error getting pipeline names: ${JSON.stringify(
+                pipelineNamesError
+              )}`
             )
           }
 
@@ -577,7 +595,9 @@ do {
 
             if (updateError) {
               throw new Error(
-                `Error updating supabase contact ${currContact.firstName} ${currContact.lastName}: ${JSON.stringify(updateError)}`
+                `Error updating supabase contact ${currContact.firstName} ${
+                  currContact.lastName
+                }: ${JSON.stringify(updateError)}`
               )
             }
 
@@ -591,7 +611,11 @@ do {
               .eq('ghl_contact_id', currContact.id)
 
             if (updateOppIdError) {
-              throw new Error(`Error updating opportunity id: ${JSON.stringify(updateOppIdError)}`)
+              throw new Error(
+                `Error updating opportunity id: ${JSON.stringify(
+                  updateOppIdError
+                )}`
+              )
             }
           } else {
             const { data: insertData, error: insertError } = await supabase.rpc(

@@ -1,0 +1,1156 @@
+#!/usr/bin/env node
+
+import { createClient } from '@supabase/supabase-js'
+import dotenv from 'dotenv'
+import fs from 'fs'
+
+dotenv.config()
+
+const SUPABASE_URL = process.env.SUPABASE_URL ?? ''
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY ?? ''
+const BASE_URL = process.env.BASE_URL ?? 'https://services.leadconnectorhq.com'
+const API_VERSION = process.env.API_VERSION ?? '2021-07-28'
+const TOKEN = process.env.TOKEN
+const LOCATION_ID = process.env.LOCATION_ID
+
+// Configuration for performance
+const PAGE_LIMIT = 100
+const BATCH_SIZE = 500
+const MAX_FUNCTION_RUNTIME = 540 // 9 minutes for Cloud Run (leaving 1 min buffer)
+const CONCURRENCY = 10 // Higher concurrency for Cloud Run
+
+const HEADERS = {
+  Authorization: `Bearer ${TOKEN}`,
+  'Content-Type': 'application/json',
+  Accept: 'application/json',
+  Version: API_VERSION,
+  'User-Agent': 'cloud-run-sync-cleanup/1.0'
+}
+
+// ===== Pretty logging utilities =====
+const ansi = {
+  reset: '\x1b[0m',
+  bold: s => `\x1b[1m${s}\x1b[0m`,
+  dim: s => `\x1b[2m${s}\x1b[0m`,
+  red: s => `\x1b[31m${s}\x1b[0m`,
+  green: s => `\x1b[32m${s}\x1b[0m`,
+  yellow: s => `\x1b[33m${s}\x1b[0m`,
+  blue: s => `\x1b[34m${s}\x1b[0m`,
+  cyan: s => `\x1b[36m${s}\x1b[0m`,
+  gray: s => `\x1b[90m${s}\x1b[0m`
+}
+
+const sym = {
+  ok: ansi.green('✓'),
+  err: ansi.red('✗'),
+  warn: ansi.yellow('⚠'),
+  info: ansi.cyan('ℹ'),
+  skip: ansi.yellow('⊘')
+}
+
+// Stats tracking
+const stats = {
+  // Cleanup stats
+  totalGhlOpportunities: 0,
+  totalDbOpportunities: 0,
+  deletedOpportunities: 0,
+  cleanupErrorCount: 0,
+
+  // Insert stats
+  processedForInsert: 0,
+  insertedOpportunities: 0,
+  updatedOpportunities: 0,
+  skippedOpportunities: 0,
+  insertErrorCount: 0,
+  updateErrorCount: 0,
+
+  // Tracking
+  currentPage: 1,
+  startTime: new Date().toISOString()
+}
+
+const errorOpportunities = []
+const insertedFactIDs = []
+const skippedOpportunityIDs = []
+
+// Helper functions
+function delay (ms) {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
+
+async function withRetries (fn, { retries = 3, baseDelay = 500 } = {}) {
+  let attempt = 0
+  for (;;) {
+    try {
+      return await fn()
+    } catch (err) {
+      attempt++
+      const status = err?.response?.status || err?.status || null
+      const errMsg = err?.message || String(err)
+
+      const isStatementTimeout =
+        errMsg.includes('statement timeout') ||
+        errMsg.includes('canceling statement due to statement timeout') ||
+        errMsg.includes('57014')
+
+      const isDeadlock =
+        errMsg.includes('deadlock detected') || errMsg.includes('40P01')
+
+      const is500Error =
+        status === 500 ||
+        errMsg.includes('Internal server error') ||
+        errMsg.includes('500: Internal server error')
+
+      const retriable =
+        status === 429 ||
+        status === 408 ||
+        (status >= 500 && status <= 599) ||
+        isStatementTimeout ||
+        isDeadlock ||
+        is500Error ||
+        !status
+
+      if (!retriable || attempt > retries) throw err
+
+      const sleep = baseDelay * Math.pow(2, attempt - 1)
+      console.warn(
+        `${ansi.yellow(
+          'Retry'
+        )} ${attempt}/${retries} after ${sleep}ms (${errMsg.slice(0, 100)})`
+      )
+      await delay(sleep)
+    }
+  }
+}
+
+async function fetchWithRetries (
+  url,
+  options = {},
+  opts = { retries: 3, baseDelay: 500 }
+) {
+  return withRetries(async () => {
+    const res = await fetch(url, options)
+    if (!res.ok) {
+      const text = await res.text().catch(() => '')
+      const err = new Error(`HTTP ${res.status} ${res.statusText}`)
+      err.status = res.status
+      err.response = { status: res.status, data: text }
+      throw err
+    }
+    const text = await res.text().catch(() => '')
+    if (!text) return null
+    try {
+      return JSON.parse(text)
+    } catch (e) {
+      return text
+    }
+  }, opts)
+}
+
+// Simple promise pool
+async function promisePool (items, worker, concurrency) {
+  let i = 0
+  const runners = Array.from({ length: Math.max(1, concurrency) }, async () => {
+    while (true) {
+      const idx = i++
+      if (idx >= items.length) break
+      await worker(items[idx], idx)
+    }
+  })
+  await Promise.all(runners)
+}
+
+async function runSyncAndCleanup () {
+  const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
+  const jobId = crypto.randomUUID()
+  const startTimeMs = Date.now()
+
+  try {
+    console.log(ansi.bold('\n========================================'))
+    console.log(ansi.bold('  GHL OPPORTUNITY SYNC & CLEANUP'))
+    console.log(ansi.bold('========================================\n'))
+    console.log(`Job ID: ${jobId}`)
+    console.log(`Start Time: ${stats.startTime}`)
+    console.log(`Maximum Runtime: ${MAX_FUNCTION_RUNTIME} seconds\n`)
+
+    // ====================================================================
+    // PHASE 1: FETCH OPPORTUNITY IDS FROM GHL (Lightweight)
+    // ====================================================================
+    console.log(ansi.bold('\nPHASE 1: RETRIEVING OPPORTUNITY IDS FROM GHL\n'))
+    console.log('  Using streaming approach for memory optimization\n')
+
+    const ghlOpportunityIds = []
+    let totalPages = 0
+    let currentPage = 1
+    let hasMorePages = true
+    let fetchCompletedSuccessfully = true
+
+    const getGhlOpportunities = async page => {
+      const url = `${BASE_URL}/opportunities/search?location_id=${LOCATION_ID}&page=${page}&limit=${PAGE_LIMIT}`
+      const response = await fetch(url, { method: 'GET', headers: HEADERS })
+
+      if (response.status === 429) {
+        console.warn(
+          `Rate limit encountered on page ${page}. Waiting 5 seconds before retry...`
+        )
+        await delay(5000)
+        return await getGhlOpportunities(page)
+      }
+
+      if (!response.ok) {
+        throw new Error(
+          `HTTP ${response.status} error while fetching page ${page}`
+        )
+      }
+
+      return await response.json()
+    }
+
+    // PASS 1: Collect only IDs (lightweight - ~10 bytes per ID vs ~1KB per full object)
+    while (hasMorePages) {
+      const elapsedSeconds = (Date.now() - startTimeMs) / 1000
+      if (elapsedSeconds > MAX_FUNCTION_RUNTIME) {
+        console.error(
+          `Runtime limit approaching (${elapsedSeconds.toFixed(
+            1
+          )}s). Halting fetch operation.`
+        )
+        fetchCompletedSuccessfully = false
+        break
+      }
+
+      try {
+        const response = await getGhlOpportunities(currentPage)
+        const { opportunities, meta } = response
+
+        if (!opportunities || opportunities.length === 0) {
+          hasMorePages = false
+          break
+        }
+
+        // Only store IDs, not full objects (90% memory reduction)
+        opportunities.forEach(opp => {
+          if (opp.id) {
+            ghlOpportunityIds.push(opp.id)
+          }
+        })
+
+        stats.totalGhlOpportunities += opportunities.length
+        stats.currentPage = currentPage
+        totalPages = currentPage
+
+        console.log(
+          `  Page ${currentPage}: Retrieved ${opportunities.length} opportunity IDs (Total: ${ghlOpportunityIds.length})`
+        )
+
+        hasMorePages =
+          opportunities.length === PAGE_LIMIT &&
+          Boolean(meta?.nextPage || meta?.nextPageUrl)
+
+        currentPage++
+      } catch (error) {
+        console.error(`Error processing page ${currentPage}: ${error.message}`)
+        stats.cleanupErrorCount++
+        currentPage++
+
+        if (stats.cleanupErrorCount > 10) {
+          console.error(`Error threshold exceeded. Halting fetch operation.`)
+          fetchCompletedSuccessfully = false
+          throw new Error('Excessive consecutive errors encountered')
+        }
+      }
+    }
+
+    console.log(
+      `\nSuccessfully retrieved ${ansi.bold(
+        String(ghlOpportunityIds.length)
+      )} opportunity IDs from GHL across ${totalPages} pages\n`
+    )
+    console.log(
+      `  Memory usage: ~${((ghlOpportunityIds.length * 10) / 1024).toFixed(
+        2
+      )}KB (IDs only)\n`
+    )
+
+    // SAFETY CHECK: Abort if fetch incomplete
+    if (!fetchCompletedSuccessfully) {
+      throw new Error(
+        'Incomplete data retrieval from GHL. Operation aborted to prevent data loss.'
+      )
+    }
+
+    // ====================================================================
+    // PHASE 2: GET DATABASE OPPORTUNITIES
+    // ====================================================================
+    console.log(ansi.bold('\nPHASE 2: DATABASE VALIDATION\n'))
+
+    const { count: dbOpportunityCount, error: countError } = await supabase
+      .from('fact_contacts')
+      .select('*', { count: 'exact', head: true })
+      .not('ghl_opportunity_id', 'is', null)
+
+    if (countError) {
+      throw new Error(`Database query error: ${JSON.stringify(countError)}`)
+    }
+
+    stats.totalDbOpportunities = dbOpportunityCount || 0
+    console.log(
+      `  Database contains ${ansi.bold(
+        String(stats.totalDbOpportunities)
+      )} opportunities`
+    )
+
+    // SAFETY CHECK: Verify counts
+    const fetchedCount = ghlOpportunityIds.length
+    const dbCount = stats.totalDbOpportunities
+    const discrepancyThreshold = 0.1
+
+    if (dbCount > 0 && fetchedCount < dbCount) {
+      const discrepancyRatio = (dbCount - fetchedCount) / dbCount
+      console.warn(
+        `  Data discrepancy detected: Retrieved ${fetchedCount} opportunities, database contains ${dbCount} (${(
+          discrepancyRatio * 100
+        ).toFixed(1)}% variance)`
+      )
+
+      if (discrepancyRatio > discrepancyThreshold) {
+        throw new Error(
+          `Data integrity check failed: Retrieved ${fetchedCount} opportunities but expected approximately ${dbCount} (variance ${(
+            discrepancyRatio * 100
+          ).toFixed(1)}% exceeds ${discrepancyThreshold * 100}% threshold)`
+        )
+      }
+    }
+
+    console.log(`  Data validation completed successfully\n`)
+
+    // ====================================================================
+    // PHASE 3: CLEANUP - MARK AND SWEEP
+    // ====================================================================
+    console.log(ansi.bold('\nPHASE 3: OPPORTUNITY CLEANUP\n'))
+
+    const currentTimestamp = new Date().toISOString()
+
+    // Mark phase
+    console.log('  Marking active opportunities...')
+    if (ghlOpportunityIds.length > 0) {
+      const batches = []
+      for (let i = 0; i < ghlOpportunityIds.length; i += BATCH_SIZE) {
+        batches.push(ghlOpportunityIds.slice(i, i + BATCH_SIZE))
+      }
+
+      console.log(`  Processing ${batches.length} batches...`)
+
+      for (let batchIndex = 0; batchIndex < batches.length; batchIndex++) {
+        const batch = batches[batchIndex]
+
+        try {
+          const { error: markError } = await supabase
+            .from('fact_contacts')
+            .update({ opportunity_last_checked_at: currentTimestamp })
+            .in('ghl_opportunity_id', batch)
+
+          if (markError) {
+            console.error(
+              `  Error marking batch ${batchIndex + 1}: ${markError.message}`
+            )
+            stats.cleanupErrorCount++
+
+            // Retry once
+            await delay(1000)
+            const { error: retryError } = await supabase
+              .from('fact_contacts')
+              .update({ opportunity_last_checked_at: currentTimestamp })
+              .in('ghl_opportunity_id', batch)
+
+            if (retryError) {
+              console.error(`  Retry failed for batch ${batchIndex + 1}`)
+              stats.cleanupErrorCount++
+            }
+          }
+
+          if (batchIndex < batches.length - 1) {
+            await delay(100)
+          }
+        } catch (error) {
+          console.error(
+            `  ${sym.err} Error processing batch ${batchIndex + 1}:`,
+            error.message
+          )
+          stats.cleanupErrorCount++
+        }
+      }
+
+      // Sweep phase
+      console.log('\n  🗑️  Sweeping unchecked opportunities...')
+      const { data: uncheckedOpportunities, error: cleanupError } =
+        await supabase.rpc('cleanup_unchecked_opportunities', {
+          p_current_timestamp: currentTimestamp
+        })
+
+      if (cleanupError) {
+        throw new Error(`Error cleaning up: ${JSON.stringify(cleanupError)}`)
+      }
+
+      stats.deletedOpportunities = uncheckedOpportunities?.length || 0
+      console.log(
+        `  ${sym.ok} Cleaned up ${ansi.bold(
+          String(stats.deletedOpportunities)
+        )} stale opportunities\n`
+      )
+    } else {
+      console.log('  ${sym.info} No opportunities in GHL, clearing all...')
+      const { data: allDeletedOpportunities, error: clearAllError } =
+        await supabase.rpc('clear_all_opportunities', {
+          p_current_timestamp: currentTimestamp
+        })
+
+      if (clearAllError) {
+        throw new Error(`Error clearing all: ${JSON.stringify(clearAllError)}`)
+      }
+
+      stats.deletedOpportunities = allDeletedOpportunities?.length || 0
+      console.log(
+        `  ${sym.ok} Cleared ${stats.deletedOpportunities} opportunities\n`
+      )
+    }
+
+    // ====================================================================
+    // PHASE 4: INSERT MISSING OPPORTUNITIES
+    // ====================================================================
+    console.log(ansi.bold('\nPHASE 4: OPPORTUNITY SYNCHRONIZATION\n'))
+
+    // Get existing opportunities from DB (after cleanup)
+    const { data: existingDbOpportunities, error: existingErr } = await supabase
+      .from('fact_contacts')
+      .select('ghl_opportunity_id')
+      .not('ghl_opportunity_id', 'is', null)
+
+    if (existingErr) {
+      throw new Error(
+        `Error fetching existing opportunities: ${JSON.stringify(existingErr)}`
+      )
+    }
+
+    const existingOppSet = new Set(
+      (existingDbOpportunities || []).map(r => r.ghl_opportunity_id)
+    )
+
+    console.log(`  Existing opportunities in database: ${existingOppSet.size}`)
+
+    // PASS 2: Process page by page (streaming approach)
+    console.log(`  Total pages to process: ${totalPages}`)
+    console.log(`  Processing with CONCURRENCY=${CONCURRENCY}\n`)
+
+    let totalProcessed = 0
+    let totalToUpdateCount = 0
+    let totalToInsertCount = 0
+
+    // GHL API helpers
+    const getGhlContact = async contactId => {
+      const URL = `${BASE_URL}/contacts/${contactId}`
+      try {
+        const contact = await fetchWithRetries(
+          URL,
+          { method: 'GET', headers: HEADERS },
+          { retries: 3, baseDelay: 500 }
+        )
+        return contact
+      } catch (error) {
+        if (error?.status === 404) return null
+        if (error?.status === 429) {
+          await delay(5000)
+          return null
+        }
+        return null
+      }
+    }
+
+    const getCustomFieldValue = (customFields, fieldId) => {
+      return customFields?.find(field => field.id === fieldId)?.value || null
+    }
+
+    const getOpportunityCustomFieldValue = (customFields, fieldId) => {
+      return (
+        customFields?.find(field => field.id === fieldId)?.fieldValueString ||
+        null
+      )
+    }
+
+    const addEinsteinURL = async ({
+      ghl_opportunity_id,
+      ghl_contact_id,
+      einstein_url
+    }) => {
+      // Add to opportunity
+      const oppPayload = {
+        customFields: [
+          {
+            id: '5lDyHBJDAukD5YM7M4WG',
+            key: 'proposal_link',
+            field_value: einstein_url
+          }
+        ]
+      }
+      await fetchWithRetries(
+        `${BASE_URL}/opportunities/${ghl_opportunity_id}`,
+        { body: JSON.stringify(oppPayload), headers: HEADERS, method: 'PUT' },
+        { retries: 3, baseDelay: 500 }
+      )
+
+      // Add to notes
+      const notePayload = {
+        userId: 'JERtBepiajyLX1Pghv3T',
+        body: `Proposal Link: \n\n ${einstein_url}`
+      }
+      await fetchWithRetries(
+        `${BASE_URL}/contacts/${ghl_contact_id}/notes/`,
+        {
+          body: JSON.stringify(notePayload),
+          headers: HEADERS,
+          method: 'POST'
+        },
+        { retries: 3, baseDelay: 500 }
+      )
+    }
+
+    // Custom field IDs
+    const PUBLISHER_C = 'AMgJg4wIu7GKV02OGxD3'
+    const TIMEZONE_C = 'fFWUJ9OFbYBqVJjwjQGP'
+    const CONTACT_SOURCE_DETAIL = 'IjmRpmQlwHiJjGnTLptG'
+    const SOURCE_DETAIL_VALUE_C = 'JMwy9JsVRTTzg4PDQnhk'
+    const OPP_PUBLISHER = 'ggsTQrS88hJgLI5J5604'
+    const OPP_TIMEZONE = 'gsFwmLo8XyzCjIoXxXYQ'
+    const OPP_ACTIVE_OR_PAST_AUTHOR = '4P0Yd0fLzOfns3opxTGo'
+    const OPP_GENRE = '5wlgHZzuWLyr918dMh7y'
+    const OPP_WRITING_PROCESS = 'cG5oYGyyKmEWwzn7y8HA'
+    const OPP_BOOK_DESCRIPTION = 'aOH64ZsyJ5blAZtf9IxK'
+    const OPP_OUTREACH_ATTEMPT = 'BOGtp8xLezwurePxIkNE'
+    const OPP_PIPELINE_BACKUP = 'uUEENCZJBnr0mjbuPe98'
+    const OPP_SOURCE_DETAIL_VALUE = 'UAjLmcYVz1hdI4sPVKSr'
+
+    for (let page = 1; page <= totalPages; page++) {
+      const elapsedSeconds = (Date.now() - startTimeMs) / 1000
+      if (elapsedSeconds > MAX_FUNCTION_RUNTIME) {
+        console.error(
+          `Runtime limit approaching (${elapsedSeconds.toFixed(
+            1
+          )}s). Stopping processing.`
+        )
+        break
+      }
+
+      console.log(
+        `\n  ${ansi.cyan(`[Page ${page}/${totalPages}]`)} Fetching...`
+      )
+
+      try {
+        // Re-fetch this page's full opportunity data
+        const response = await getGhlOpportunities(page)
+        const { opportunities } = response
+
+        if (!opportunities || opportunities.length === 0) {
+          console.log(`    No opportunities on page ${page}, skipping`)
+          continue
+        }
+
+        console.log(`    Retrieved ${opportunities.length} opportunities`)
+
+        // Filter out opportunities that already exist in DB
+        const newOpportunities = opportunities.filter(
+          opp => !existingOppSet.has(opp.id)
+        )
+
+        if (newOpportunities.length === 0) {
+          console.log(
+            `    All ${opportunities.length} opportunities already exist, skipping`
+          )
+          totalProcessed += opportunities.length
+          continue
+        }
+
+        console.log(
+          `    ${newOpportunities.length} new opportunities to process`
+        )
+
+        // Get contact IDs for batch checking
+        const opportunityContactIds = newOpportunities
+          .map(opp => opp.contact?.id)
+          .filter(Boolean)
+
+        // Batch check which contacts exist without opportunity IDs
+        const { data: contactsWithoutOppId, error: contactsErr } =
+          await supabase
+            .from('fact_contacts')
+            .select('ghl_contact_id')
+            .in('ghl_contact_id', opportunityContactIds)
+            .is('ghl_opportunity_id', null)
+
+        if (contactsErr) {
+          throw new Error(`Query error: ${JSON.stringify(contactsErr)}`)
+        }
+
+        const contactsWithoutOppIdSet = new Set(
+          (contactsWithoutOppId || []).map(r => r.ghl_contact_id)
+        )
+
+        // Categorize into update vs insert
+        const opportunitiesToUpdate = []
+        const opportunitiesToInsert = []
+
+        newOpportunities.forEach(opp => {
+          if (contactsWithoutOppIdSet.has(opp.contact?.id)) {
+            opportunitiesToUpdate.push(opp)
+          } else {
+            opportunitiesToInsert.push(opp)
+          }
+        })
+
+        console.log(
+          `    To UPDATE: ${opportunitiesToUpdate.length}, To INSERT: ${opportunitiesToInsert.length}`
+        )
+
+        totalToUpdateCount += opportunitiesToUpdate.length
+        totalToInsertCount += opportunitiesToInsert.length
+
+        // Process inserts for this page
+        if (opportunitiesToInsert.length > 0) {
+          await promisePool(
+            opportunitiesToInsert,
+            async (currOpportunity, index) => {
+              try {
+                const fetchedContact = await getGhlContact(
+                  currOpportunity.contact.id
+                )
+                const { contact: currContact } = fetchedContact || {
+                  contact: {}
+                }
+
+                if (!currContact || !currContact.id) {
+                  errorOpportunities.push(
+                    `Opportunity ${currOpportunity.id}: Contact not found`
+                  )
+                  stats.insertErrorCount++
+                  return
+                }
+
+                const { data: pipelineNames, error: pipelineNamesError } =
+                  await supabase.rpc('get_pipeline_and_stage_names', {
+                    p_pipeline_id: currOpportunity.pipelineId,
+                    p_pipeline_stage_id: currOpportunity.pipelineStageId
+                  })
+
+                if (pipelineNamesError) {
+                  throw new Error(
+                    `Error getting pipeline names: ${JSON.stringify(
+                      pipelineNamesError
+                    )}`
+                  )
+                }
+
+                const pipelineName = pipelineNames?.[0]?.pipeline_name ?? null
+                const pipelineStageName = pipelineNames?.[0]?.stage_name ?? null
+
+                const publisher = getCustomFieldValue(
+                  currContact.customFields,
+                  PUBLISHER_C
+                )
+                const timezone = getCustomFieldValue(
+                  currContact.customFields,
+                  TIMEZONE_C
+                )
+                const contactSource = getCustomFieldValue(
+                  currContact.customFields,
+                  CONTACT_SOURCE_DETAIL
+                )
+                const sourceDetailValue = getCustomFieldValue(
+                  currContact.customFields,
+                  SOURCE_DETAIL_VALUE_C
+                )
+
+                const oppPublisher = getOpportunityCustomFieldValue(
+                  currOpportunity.customFields,
+                  OPP_PUBLISHER
+                )
+                const oppTimezone = getOpportunityCustomFieldValue(
+                  currOpportunity.customFields,
+                  OPP_TIMEZONE
+                )
+                const oppActiveOrPastAuthor = getOpportunityCustomFieldValue(
+                  currOpportunity.customFields,
+                  OPP_ACTIVE_OR_PAST_AUTHOR
+                )
+                const oppGenre = getOpportunityCustomFieldValue(
+                  currOpportunity.customFields,
+                  OPP_GENRE
+                )
+                const oppWritingProcess = getOpportunityCustomFieldValue(
+                  currOpportunity.customFields,
+                  OPP_WRITING_PROCESS
+                )
+                const oppBookDescription = getOpportunityCustomFieldValue(
+                  currOpportunity.customFields,
+                  OPP_BOOK_DESCRIPTION
+                )
+                const oppOutreachAttempt = getOpportunityCustomFieldValue(
+                  currOpportunity.customFields,
+                  OPP_OUTREACH_ATTEMPT
+                )
+                const oppPipelineBackup = getOpportunityCustomFieldValue(
+                  currOpportunity.customFields,
+                  OPP_PIPELINE_BACKUP
+                )
+                const oppSourceDetailValue = getOpportunityCustomFieldValue(
+                  currOpportunity.customFields,
+                  OPP_SOURCE_DETAIL_VALUE
+                )
+
+                const fullAddress =
+                  [
+                    currContact.address1 || '',
+                    currContact.city || '',
+                    currContact.state || '',
+                    currContact.postalCode || ''
+                  ]
+                    .filter(part => part.trim() !== '')
+                    .join(', ') || ''
+
+                const insertPayload = {
+                  p_first_name: currContact.firstName ?? null,
+                  p_last_name: currContact.lastName ?? null,
+                  p_email: currContact.email ?? null,
+                  p_phone_number: currContact.phone ?? null,
+                  p_full_address: fullAddress ?? null,
+                  p_address_line1: currContact.address1 ?? 'Unprovided',
+                  p_address_line2: null,
+                  p_city: currContact.city ?? null,
+                  p_state_region: currContact.state ?? null,
+                  p_postal_code: currContact.postalCode ?? null,
+                  p_country: currContact.country ?? null,
+                  p_time_zone: timezone ?? oppTimezone ?? null,
+                  p_source:
+                    currContact.source ?? currOpportunity.source ?? null,
+                  p_website_landing_page:
+                    sourceDetailValue ?? oppSourceDetailValue ?? null,
+                  p_lead_source: contactSource ?? 'Unprovided',
+                  p_data_source: 'direct',
+                  p_lead_owner: currContact.assignedTo ?? null,
+                  p_lead_value: currOpportunity.monetaryValue
+                    ? String(currOpportunity.monetaryValue)
+                    : null,
+                  p_is_author: currContact.type === 'author',
+                  p_current_author: oppActiveOrPastAuthor === 'yes',
+                  p_publisher: publisher ?? oppPublisher ?? null,
+                  p_genre: oppGenre ?? null,
+                  p_book_description: oppBookDescription ?? null,
+                  p_writing_status: oppWritingProcess ?? null,
+                  p_rating: pipelineName ?? oppPipelineBackup ?? null,
+                  p_pipeline_stage: pipelineStageName ?? null,
+                  p_stage_id: currOpportunity.pipelineStageId ?? null,
+                  p_pipeline_id: currOpportunity.pipelineId ?? null,
+                  p_opt_out_of_emails: currContact.dnd ?? false,
+                  p_outreach_attempt: oppOutreachAttempt ?? 0,
+                  p_notes: null,
+                  p_ghl_contact_id: currContact.id ?? null,
+                  p_ghl_opportunity_id: currOpportunity.id
+                }
+
+                const insertData = await withRetries(
+                  async () => {
+                    const { data, error } = await supabase.rpc(
+                      'insert_contact_to_star_schema',
+                      insertPayload
+                    )
+                    if (error) {
+                      const err = new Error(
+                        `RPC failed: ${error.message || JSON.stringify(error)}`
+                      )
+                      err.status = error?.code || error?.status || null
+                      throw err
+                    }
+                    if (!data || data.length === 0) {
+                      throw new Error('RPC returned empty result')
+                    }
+                    return data
+                  },
+                  { retries: 3, baseDelay: 500 }
+                )
+
+                const { out_einstein_url, out_fact_id, out_ghl_contact_id } =
+                  insertData[0]
+
+                await addEinsteinURL({
+                  ghl_opportunity_id: currOpportunity.id,
+                  ghl_contact_id: out_ghl_contact_id,
+                  einstein_url: out_einstein_url
+                })
+
+                insertedFactIDs.push(out_fact_id)
+                stats.insertedOpportunities++
+              } catch (error) {
+                errorOpportunities.push(
+                  `Opportunity ${currOpportunity.id}: ${error.message}`
+                )
+                stats.insertErrorCount++
+              }
+            },
+            CONCURRENCY
+          )
+        }
+
+        // Process updates for this page
+        if (opportunitiesToUpdate.length > 0) {
+          await promisePool(
+            opportunitiesToUpdate,
+            async (currOpportunity, index) => {
+              try {
+                const fetchedContact = await getGhlContact(
+                  currOpportunity.contact.id
+                )
+                const { contact: currContact } = fetchedContact || {
+                  contact: {}
+                }
+
+                if (!currContact || !currContact.id) {
+                  errorOpportunities.push(
+                    `Opportunity ${currOpportunity.id}: Contact not found for update`
+                  )
+                  stats.updateErrorCount++
+                  return
+                }
+
+                const { data: pipelineNames, error: pipelineNamesError } =
+                  await supabase.rpc('get_pipeline_and_stage_names', {
+                    p_pipeline_id: currOpportunity.pipelineId,
+                    p_pipeline_stage_id: currOpportunity.pipelineStageId
+                  })
+
+                if (pipelineNamesError) {
+                  throw new Error(
+                    `Error getting pipeline names: ${JSON.stringify(
+                      pipelineNamesError
+                    )}`
+                  )
+                }
+
+                const pipelineName = pipelineNames?.[0]?.pipeline_name ?? null
+                const pipelineStageName = pipelineNames?.[0]?.stage_name ?? null
+
+                const publisher = getCustomFieldValue(
+                  currContact.customFields,
+                  PUBLISHER_C
+                )
+                const timezone = getCustomFieldValue(
+                  currContact.customFields,
+                  TIMEZONE_C
+                )
+                const contactSource = getCustomFieldValue(
+                  currContact.customFields,
+                  CONTACT_SOURCE_DETAIL
+                )
+                const sourceDetailValue = getCustomFieldValue(
+                  currContact.customFields,
+                  SOURCE_DETAIL_VALUE_C
+                )
+
+                const oppPublisher = getOpportunityCustomFieldValue(
+                  currOpportunity.customFields,
+                  OPP_PUBLISHER
+                )
+                const oppTimezone = getOpportunityCustomFieldValue(
+                  currOpportunity.customFields,
+                  OPP_TIMEZONE
+                )
+                const oppActiveOrPastAuthor = getOpportunityCustomFieldValue(
+                  currOpportunity.customFields,
+                  OPP_ACTIVE_OR_PAST_AUTHOR
+                )
+                const oppGenre = getOpportunityCustomFieldValue(
+                  currOpportunity.customFields,
+                  OPP_GENRE
+                )
+                const oppWritingProcess = getOpportunityCustomFieldValue(
+                  currOpportunity.customFields,
+                  OPP_WRITING_PROCESS
+                )
+                const oppBookDescription = getOpportunityCustomFieldValue(
+                  currOpportunity.customFields,
+                  OPP_BOOK_DESCRIPTION
+                )
+                const oppOutreachAttempt = getOpportunityCustomFieldValue(
+                  currOpportunity.customFields,
+                  OPP_OUTREACH_ATTEMPT
+                )
+                const oppPipelineBackup = getOpportunityCustomFieldValue(
+                  currOpportunity.customFields,
+                  OPP_PIPELINE_BACKUP
+                )
+                const oppSourceDetailValue = getOpportunityCustomFieldValue(
+                  currOpportunity.customFields,
+                  OPP_SOURCE_DETAIL_VALUE
+                )
+
+                const fullAddress =
+                  [
+                    currContact.address1 || '',
+                    currContact.city || '',
+                    currContact.state || '',
+                    currContact.postalCode || ''
+                  ]
+                    .filter(part => part.trim() !== '')
+                    .join(', ') || ''
+
+                const updatePayload = {
+                  p_ghl_contact_id: currContact.id ?? null,
+                  p_first_name: currContact.firstName ?? null,
+                  p_last_name: currContact.lastName ?? null,
+                  p_email: currContact.email ?? null,
+                  p_phone_number: currContact.phone ?? null,
+                  p_full_address: fullAddress ?? null,
+                  p_address_line1: currContact.address1 ?? null,
+                  p_address_line2: null,
+                  p_city: currContact.city ?? null,
+                  p_state_region: currContact.state ?? null,
+                  p_postal_code: currContact.postalCode ?? null,
+                  p_country: currContact.country ?? null,
+                  p_time_zone: timezone ?? oppTimezone ?? null,
+                  p_source:
+                    currContact.source ?? currOpportunity.source ?? null,
+                  p_website_landing_page:
+                    sourceDetailValue ?? oppSourceDetailValue ?? null,
+                  p_lead_source: contactSource ?? null,
+                  p_data_source: null,
+                  p_lead_owner: currContact.assignedTo ?? null,
+                  p_lead_value: currOpportunity.monetaryValue ?? '0',
+                  p_is_author: currContact.type === 'author',
+                  p_current_author:
+                    String(oppActiveOrPastAuthor).toLowerCase() === 'yes' ||
+                    oppActiveOrPastAuthor === true,
+                  p_publisher: publisher ?? oppPublisher ?? null,
+                  p_genre: oppGenre ?? null,
+                  p_book_description: oppBookDescription ?? 'Unprovided',
+                  p_writing_status: oppWritingProcess ?? 'Unknown',
+                  p_rating: pipelineName ?? oppPipelineBackup ?? null,
+                  p_pipeline_stage: pipelineStageName ?? null,
+                  p_stage_id: currOpportunity.pipelineStageId ?? null,
+                  p_pipeline_id: currOpportunity.pipelineId ?? null,
+                  p_opt_out_of_emails: currContact.dnd ?? false,
+                  p_outreach_attempt: parseInt(oppOutreachAttempt ?? '0', 10),
+                  p_notes: null,
+                  p_new_ghl_contact_id: null,
+                  p_new_ghl_opportunity_id: null
+                }
+
+                const updateData = await withRetries(
+                  async () => {
+                    const { data, error } = await supabase.rpc(
+                      'update_contact_in_star_schema_by_ghl',
+                      updatePayload
+                    )
+                    if (error) {
+                      const err = new Error(
+                        `RPC failed: ${error.message || JSON.stringify(error)}`
+                      )
+                      err.status = error?.code || error?.status || null
+                      throw err
+                    }
+                    if (!data || data.length === 0) {
+                      throw new Error('RPC returned empty result')
+                    }
+                    return data
+                  },
+                  { retries: 3, baseDelay: 500 }
+                )
+
+                // Update opportunity ID
+                await withRetries(
+                  async () => {
+                    const { error: updateOppIdError } = await supabase
+                      .from('fact_contacts')
+                      .update({ ghl_opportunity_id: currOpportunity.id })
+                      .eq('ghl_contact_id', currContact.id)
+
+                    if (updateOppIdError) {
+                      const err = new Error(
+                        `Error updating opportunity id: ${JSON.stringify(
+                          updateOppIdError
+                        )}`
+                      )
+                      err.status =
+                        updateOppIdError?.code ||
+                        updateOppIdError?.status ||
+                        null
+                      throw err
+                    }
+                  },
+                  { retries: 3, baseDelay: 500 }
+                )
+
+                stats.updatedOpportunities++
+              } catch (error) {
+                errorOpportunities.push(
+                  `Opportunity ${currOpportunity.id}: ${error.message}`
+                )
+                stats.updateErrorCount++
+              }
+            },
+            CONCURRENCY
+          )
+        }
+
+        totalProcessed += opportunities.length
+        console.log(
+          `    ${sym.ok} Page ${page} complete. Inserted: ${opportunitiesToInsert.length}, Updated: ${opportunitiesToUpdate.length}`
+        )
+        console.log(
+          `    Progress: ${totalProcessed}/${stats.totalGhlOpportunities} (${(
+            (totalProcessed / stats.totalGhlOpportunities) *
+            100
+          ).toFixed(1)}%)`
+        )
+
+        // Small delay between pages to avoid overwhelming APIs
+        if (page < totalPages) {
+          await delay(200)
+        }
+      } catch (error) {
+        console.error(
+          `    ${sym.err} Error processing page ${page}:`,
+          error.message
+        )
+        stats.cleanupErrorCount++
+      }
+    }
+
+    console.log(`\n  ${sym.ok} Streaming sync completed`)
+    console.log(
+      `    Total Inserted: ${ansi.bold(String(stats.insertedOpportunities))}`
+    )
+    console.log(
+      `    Total Updated: ${ansi.bold(String(stats.updatedOpportunities))}`
+    )
+    console.log(
+      `    Total Errors: ${stats.insertErrorCount + stats.updateErrorCount}\n`
+    )
+
+    // ====================================================================
+    // PHASE 5: LOG RESULTS
+    // ====================================================================
+    console.log(ansi.bold('\nPHASE 5: RESULTS LOGGING\n'))
+
+    const endTime = new Date().toISOString()
+    const { error: logError } = await supabase
+      .from('opportunity_cleanup_logs')
+      .insert({
+        job_id: jobId,
+        cleanup_time: stats.startTime,
+        total_ghl_opportunities: stats.totalGhlOpportunities,
+        total_db_opportunities: stats.totalDbOpportunities,
+        deleted_opportunities: stats.deletedOpportunities,
+        error_count:
+          stats.cleanupErrorCount +
+          stats.insertErrorCount +
+          stats.updateErrorCount,
+        status: 'completed',
+        end_time: endTime
+      })
+
+    if (logError) {
+      console.error(`  Database logging error: ${logError.message}`)
+    } else {
+      console.log(`  Results logged to database successfully`)
+    }
+
+    // Write summary files
+    const summary = {
+      jobId,
+      startTime: stats.startTime,
+      endTime,
+      executionTimeSeconds: ((Date.now() - startTimeMs) / 1000).toFixed(2),
+      cleanup: {
+        totalGhlOpportunities: stats.totalGhlOpportunities,
+        totalDbOpportunities: stats.totalDbOpportunities,
+        deletedOpportunities: stats.deletedOpportunities,
+        errorCount: stats.cleanupErrorCount
+      },
+      insert: {
+        opportunitiesProcessed: totalToInsertCount || 0,
+        insertedOpportunities: stats.insertedOpportunities,
+        skippedOpportunities: stats.skippedOpportunities,
+        errorCount: stats.insertErrorCount
+      },
+      update: {
+        opportunitiesProcessed: totalToUpdateCount || 0,
+        updatedOpportunities: stats.updatedOpportunities,
+        errorCount: stats.updateErrorCount
+      },
+      errors: errorOpportunities,
+      insertedFactIDs
+    }
+
+    const folderName = 'SyncAndCleanupLogs'
+    if (!fs.existsSync(folderName)) {
+      fs.mkdirSync(folderName)
+    }
+
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
+    const jsonFile = `${folderName}/sync-cleanup-${timestamp}.json`
+    fs.writeFileSync(jsonFile, JSON.stringify(summary, null, 2))
+    console.log(`  Summary report: ${jsonFile}\n`)
+
+    // Final summary
+    console.log(ansi.bold('\n========================================'))
+    console.log(ansi.bold('         OPERATION SUMMARY'))
+    console.log(ansi.bold('========================================\n'))
+    console.log(`Job ID: ${jobId}`)
+    console.log(`Execution Time: ${summary.executionTimeSeconds} seconds`)
+    console.log(`\n${ansi.bold('CLEANUP RESULTS:')}`)
+    console.log(`  GHL Opportunities: ${stats.totalGhlOpportunities}`)
+    console.log(`  Database Opportunities: ${stats.totalDbOpportunities}`)
+    console.log(`  Removed: ${stats.deletedOpportunities}`)
+    console.log(`  Errors: ${stats.cleanupErrorCount}`)
+    console.log(`\n${ansi.bold('INSERT RESULTS:')}`)
+    console.log(`  Inserted: ${stats.insertedOpportunities}`)
+    console.log(`  Errors: ${stats.insertErrorCount}`)
+    console.log(`\n${ansi.bold('UPDATE RESULTS:')}`)
+    console.log(`  Updated: ${stats.updatedOpportunities}`)
+    console.log(`  Errors: ${stats.updateErrorCount}`)
+    console.log(`\n${ansi.bold('========================================')}\n`)
+
+    return {
+      success: true,
+      summary
+    }
+  } catch (error) {
+    console.error(`\nFATAL ERROR: ${error.message}\n`)
+
+    // Log failed attempt
+    await supabase.from('opportunity_cleanup_logs').insert({
+      job_id: jobId,
+      cleanup_time: stats.startTime,
+      total_ghl_opportunities: stats.totalGhlOpportunities,
+      total_db_opportunities: stats.totalDbOpportunities,
+      deleted_opportunities: stats.deletedOpportunities,
+      error_count:
+        stats.cleanupErrorCount +
+        stats.insertErrorCount +
+        stats.updateErrorCount,
+      status: 'failed',
+      end_time: new Date().toISOString(),
+      error_details: error.message
+    })
+
+    process.exit(1)
+  }
+}
+
+// Run the combined sync & cleanup
+runSyncAndCleanup()
+  .then(() => {
+    console.log(`\nOperation completed successfully.\n`)
+    process.exit(0)
+  })
+  .catch(error => {
+    console.error(`\nFatal error: ${error.message}\n`)
+    process.exit(1)
+  })

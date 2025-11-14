@@ -3,10 +3,9 @@ import dotenv from 'dotenv'
 dotenv.config()
 
 const SUPABASE_URL = process.env.SUPABASE_URL
-const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
-
+const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
 console.log('Starting orchestrator...')
 console.log('This may take several minutes for large datasets...')
 
@@ -14,9 +13,15 @@ const startTime = Date.now()
 
 try {
   const { data, error: functionError } = await supabase.functions.invoke(
-    'sync_einstein_orchestrator', // Fix the function name
+    'sync-einstein-query-batch',
     {
-      body: {} // Optional: can pass page_size here if needed
+      body: {
+        limit: 2000,
+        offset: 0,
+        chain: true, // let it auto-chain until done
+        max_hops: 50 // safety cap for chaining
+        // run_id: 'optional-fixed-run-id'
+      }
     }
   )
 

@@ -6,8 +6,8 @@ dotenv.config()
 
 let processedOpportunities = 0
 let errorOpportunities = []
-let updatedFactIDs = []
 let insertedFactIDS = []
+let skippedOpportunities = []
 let lastProcessedContact = null
 let totalOpportunities = 0
 let currPage = 1
@@ -31,7 +31,8 @@ const sym = {
   ok: ansi.green('✓'),
   err: ansi.red('✗'),
   warn: ansi.yellow('●'),
-  info: ansi.cyan('ℹ')
+  info: ansi.cyan('ℹ'),
+  skip: ansi.yellow('⊘')
 }
 
 const hr = (w = 80, ch = '═') => ch.repeat(w)
@@ -90,6 +91,12 @@ const renderStatus = () => {
     `${ansi.green('Processed:')} ${ansi.bold(
       String(processedOpportunities)
     )} ` +
+    `| ${ansi.cyan('Inserted:')} ${ansi.bold(
+      String(insertedFactIDS.length)
+    )} ` +
+    `| ${ansi.yellow('Skipped:')} ${ansi.bold(
+      String(skippedOpportunities.length)
+    )} ` +
     `| ${ansi.red('Errors:')} ${ansi.bold(
       String(errorOpportunities.length)
     )} ` +
@@ -138,11 +145,13 @@ process.on('exit', code => {
   console.log(
     `${ansi.green('Processed:')} ${ansi.bold(String(processedOpportunities))}`
   )
+  console.log(`${ansi.cyan('Inserted IDs:')} ${insertedFactIDS.length}`)
+  console.log(
+    `${ansi.yellow('Skipped (Existing):')} ${skippedOpportunities.length}`
+  )
   console.log(
     `${ansi.red('Errors:')} ${ansi.bold(String(errorOpportunities.length))}`
   )
-  console.log(`${ansi.cyan('Updated IDs:')} ${updatedFactIDs.length}`)
-  console.log(`${ansi.cyan('Inserted IDs:')} ${insertedFactIDS.length}`)
   console.log(
     `${ansi.cyan('Last:')} ${ansi.gray(String(lastProcessedContact))}`
   )
@@ -156,12 +165,12 @@ process.on('exit', code => {
     timestamp: new Date().toISOString(),
     exitCode: code,
     executionTime: (end - start) / 1000,
-    contactsProcessed: processedOpportunities,
+    opportunitiesProcessed: processedOpportunities,
     totalOpportunities: totalOpportunities,
     currentPage: currPage,
-    errorContacts: errorOpportunities,
-    updatedFactIDs: updatedFactIDs,
+    errorOpportunities: errorOpportunities,
     insertedFactIDs: insertedFactIDS,
+    skippedOpportunities: skippedOpportunities,
     lastProcessedContact: {
       name: currName,
       contactID: currContactID,
@@ -173,12 +182,12 @@ process.on('exit', code => {
   // Create readable text summary
   const textSummary = `
 ${'═'.repeat(80)}
-${center('GHL OPPORTUNITY SYNC SUMMARY', 80)}
+${center('GHL OPPORTUNITY INSERT-ONLY SYNC SUMMARY', 80)}
 ${'═'.repeat(80)}
 Timestamp: ${summaryData.timestamp}
 Exit Code: ${summaryData.exitCode}
 Total Execution Time: ${formatDuration(summaryData.executionTime * 1000)}
-Contacts Processed: ${summaryData.contactsProcessed}
+Opportunities Processed: ${summaryData.opportunitiesProcessed}
 Total Opportunities: ${summaryData.totalOpportunities}
 Pages Processed: ${summaryData.currentPage - 1}
 Last Processed Contact: ${
@@ -187,16 +196,18 @@ Last Processed Contact: ${
       : 'N/A'
   }
 
-ERROR CONTACTS (${errorOpportunities.length}):
+ERROR OPPORTUNITIES (${errorOpportunities.length}):
 ${(errorOpportunities || [])
   .map((error, index) => `${index + 1}. ${error}`)
   .join('\n')}
 
-UPDATED FACT IDs (${updatedFactIDs.length}):
-${(updatedFactIDs || []).map((id, index) => `${index + 1}. ${id}`).join('\n')}
-
 INSERTED FACT IDs (${insertedFactIDS.length}):
 ${(insertedFactIDS || []).map((id, index) => `${index + 1}. ${id}`).join('\n')}
+
+SKIPPED OPPORTUNITIES (Already Exist) (${skippedOpportunities.length}):
+${(skippedOpportunities || [])
+  .map((id, index) => `${index + 1}. ${id}`)
+  .join('\n')}
 
 ${'═'.repeat(80)}
 `
@@ -207,14 +218,14 @@ ${'═'.repeat(80)}
   try {
     // Create filename with timestamp
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
-    const folderName = 'UpdateOppRecord'
+    const folderName = 'InsertOppOnlyRecord'
     if (!fs.existsSync(folderName)) {
       fs.mkdirSync(folderName)
     }
 
-    const txtFile = `${folderName}/sync-summary-${timestamp}.txt`
-    const jsonFile = `${folderName}/sync-data-${timestamp}.json`
-    const csvFile = `${folderName}/sync-errors-${timestamp}.csv`
+    const txtFile = `${folderName}/insert-only-sync-summary-${timestamp}.txt`
+    const jsonFile = `${folderName}/insert-only-sync-data-${timestamp}.json`
+    const csvFile = `${folderName}/insert-only-sync-errors-${timestamp}.csv`
 
     // Write text summary
     fs.writeFileSync(txtFile, textSummary)
@@ -230,7 +241,6 @@ ${'═'.repeat(80)}
       return s
     }
     const parseErrorLine = line => {
-      // Expected: Name: <name>, Email <email>, ContactID: <contactId>, Opportunity ID: <oppId> Reason: <reason>
       let name = '',
         email = '',
         contactId = '',
@@ -316,7 +326,7 @@ const HEADERS = {
   'Content-Type': 'application/json',
   Accept: 'application/json',
   Version: API_VERSION,
-  'User-Agent': 'vertexlabs-ghl-importer/1.0'
+  'User-Agent': 'vertexlabs-ghl-importer-insert-only/1.0'
 }
 
 // Small helper: delay for backoff
@@ -335,17 +345,14 @@ async function withRetries (fn, { retries = 3, baseDelay = 500 } = {}) {
       const status = err?.response?.status || err?.status || null
       const errMsg = err?.message || String(err)
 
-      // Check for statement timeout errors (Postgres/Supabase)
       const isStatementTimeout =
         errMsg.includes('statement timeout') ||
         errMsg.includes('canceling statement due to statement timeout') ||
-        errMsg.includes('57014') // Postgres error code for statement timeout
+        errMsg.includes('57014')
 
-      // Check for deadlock errors (Postgres)
       const isDeadlock =
-        errMsg.includes('deadlock detected') || errMsg.includes('40P01') // Postgres error code for deadlock
+        errMsg.includes('deadlock detected') || errMsg.includes('40P01')
 
-      // Check for 500 errors (including Cloudflare/Supabase internal errors)
       const is500Error =
         status === 500 ||
         errMsg.includes('Internal server error') ||
@@ -432,7 +439,6 @@ const getGhlContact = async contactId => {
     )
     return contact
   } catch (error) {
-    // If 404, return null (contact not found). For 429, note and return null.
     if (error?.status === 404) {
       return null
     }
@@ -491,6 +497,7 @@ const addEinsteinURLToOpportunity = async (
     throw e
   }
 }
+
 const addEinsteinURLToNotes = async (ghl_contact_id, einstein_url) => {
   const payload = {
     userId: 'JERtBepiajyLX1Pghv3T',
@@ -527,7 +534,6 @@ const addEinsteinURL = async ({
       'Error Updating Proposal Link',
       opportunityEinsteinData?.message
     )
-
     updateEinsteinUrlError.push(opportunityEinsteinData?.message)
   }
 
@@ -537,7 +543,6 @@ const addEinsteinURL = async ({
   )
   if (!noteEinsteinData?.note?.id) {
     console.error('Error Updating Einstein URL', noteEinsteinData?.message)
-
     updateEinsteinUrlError.push(noteEinsteinData?.message)
   }
 
@@ -556,7 +561,7 @@ const TIMEZONE_C = 'fFWUJ9OFbYBqVJjwjQGP'
 const CONTACT_SOURCE_DETAIL = 'IjmRpmQlwHiJjGnTLptG'
 const SOURCE_DETAIL_VALUE_C = 'JMwy9JsVRTTzg4PDQnhk'
 
-// Opportunity Custom Field IDs (based on your data)
+// Opportunity Custom Field IDs
 const OPP_PUBLISHER = 'ggsTQrS88hJgLI5J5604'
 const OPP_TIMEZONE = 'gsFwmLo8XyzCjIoXxXYQ'
 const OPP_ACTIVE_OR_PAST_AUTHOR = '4P0Yd0fLzOfns3opxTGo'
@@ -578,22 +583,25 @@ do {
     section(`PAGE ${currPage} — Found ${opportunities.length} opportunities`)
     renderStatus()
     totalOpportunities += opportunities.length
-    // Batch existence check for contacts on this opportunity page
-    const pageContactIds = opportunities.map(o => o.contact?.id).filter(Boolean)
-    let existingIds = []
-    if (pageContactIds.length > 0) {
+
+    // Batch existence check for OPPORTUNITIES on this page (checking ghl_opportunity_id)
+    const pageOpportunityIds = opportunities.map(o => o.id).filter(Boolean)
+    let existingOppIds = []
+    if (pageOpportunityIds.length > 0) {
       const { data: existingRows, error: existingErr } = await supabase
         .from('fact_contacts')
-        .select('ghl_contact_id')
-        .in('ghl_contact_id', pageContactIds)
+        .select('ghl_opportunity_id')
+        .in('ghl_opportunity_id', pageOpportunityIds)
       if (existingErr) {
         throw new Error(
-          `Error checking contacts existence: ${JSON.stringify(existingErr)}`
+          `Error checking opportunities existence: ${JSON.stringify(
+            existingErr
+          )}`
         )
       }
-      existingIds = (existingRows || []).map(r => r.ghl_contact_id)
+      existingOppIds = (existingRows || []).map(r => r.ghl_opportunity_id)
     }
-    const existingSet = new Set(existingIds)
+    const existingOppSet = new Set(existingOppIds)
 
     // Process opportunities concurrently
     await promisePool(
@@ -602,7 +610,6 @@ do {
         try {
           const fetchedContact = await getGhlContact(currOpportunity.contact.id)
           const { contact: currContact } = fetchedContact || { contact: {} }
-          // Removed verbose per-contact processing log per request
 
           currNumber = currOppIndex + 1
           currName = `\n      ${currContact.firstName} ${currContact.lastName}`
@@ -626,18 +633,25 @@ do {
           const pipelineName = pipelineNames?.[0]?.pipeline_name ?? null
           const pipelineStageName = pipelineNames?.[0]?.stage_name ?? null
 
-          const contactExists = existingSet.has(currContact.id)
+          const opportunityExists = existingOppSet.has(currOpportunity.id)
 
-          // Debug: log whether we think contact exists
-          if (contactExists) {
+          // Check if opportunity exists - if yes, SKIP, if no, INSERT
+          if (opportunityExists) {
             console.log(
-              `${sym.info} Contact ${currContact.id} (${currContact.firstName} ${currContact.lastName}) marked as EXISTING - will UPDATE`
+              `${sym.skip} Opportunity ${currOpportunity.id} (${currContact.firstName} ${currContact.lastName}) already EXISTS in Supabase - SKIPPING`
             )
-          } else {
-            console.log(
-              `${sym.info} Contact ${currContact.id} (${currContact.firstName} ${currContact.lastName}) marked as NEW - will INSERT`
+            skippedOpportunities.push(
+              `OpportunityID: ${currOpportunity.id}, Contact: ${currContact.firstName} ${currContact.lastName} (${currContact.id})`
             )
+            processedOpportunities++
+            lastProcessedContact = `Contact Name: ${currName}, ContactID: ${currContactID}, OpportunityID: ${currOpportunityID} - SKIPPED`
+            renderStatus()
+            return // Skip this opportunity
           }
+
+          console.log(
+            `${sym.info} Opportunity ${currOpportunity.id} (${currContact.firstName} ${currContact.lastName}) NOT found in Supabase - will INSERT`
+          )
 
           const publisher = getCustomFieldValue(
             currContact.customFields,
@@ -707,272 +721,104 @@ do {
             ]
               .filter(part => part.trim() !== '')
               .join(', ') || ''
+
           processedOpportunities++
-          lastProcessedContact = `Contact Name: ${currName}, ContactID: ${currContactID}`
+          lastProcessedContact = `Contact Name: ${currName}, ContactID: ${currContactID}, OpportunityID: ${currOpportunityID} - INSERTING`
           renderStatus()
 
-          if (contactExists) {
-            const updatePayload = {
-              // GHL contact
-              p_ghl_contact_id: currContact.id ?? null,
+          // INSERT NEW OPPORTUNITY
+          const insertPayload = {
+            p_first_name: currContact.firstName ?? null,
+            p_last_name: currContact.lastName ?? null,
+            p_email: currContact.email ?? null,
+            p_phone_number: currContact.phone ?? null,
+            p_full_address: fullAddress ?? null,
 
-              // Person
-              p_first_name: currContact.firstName ?? null,
-              p_last_name: currContact.lastName ?? null,
-              p_email: currContact.email ?? null,
-              p_phone_number: currContact.phone ?? null,
+            p_address_line1: currContact.address1 ?? 'Unprovided',
+            p_address_line2: null,
+            p_city: currContact.city ?? null,
+            p_state_region: currContact.state ?? null,
+            p_postal_code: currContact.postalCode ?? null,
+            p_country: currContact.country ?? null,
+            p_time_zone: timezone ?? oppTimezone ?? null,
 
-              // Address
-              p_full_address: fullAddress ?? null,
-              p_address_line1: currContact.address1 ?? null,
-              p_address_line2: null,
-              p_city: currContact.city ?? null,
-              p_state_region: currContact.state ?? null,
-              p_postal_code: currContact.postalCode ?? null,
-              p_country: currContact.country ?? null,
-              p_time_zone: timezone ?? oppTimezone ?? null,
+            p_source: currContact.source ?? currOpportunity.source ?? null,
+            p_website_landing_page:
+              sourceDetailValue ?? oppSourceDetailValue ?? null,
+            p_lead_source: contactSource ?? 'Unprovided',
+            p_data_source: 'direct',
+            p_lead_owner: currContact.assignedTo ?? null,
+            p_lead_value: currOpportunity.monetaryValue
+              ? String(currOpportunity.monetaryValue)
+              : null,
 
-              // Acquisition
-              p_source: currContact.source ?? currOpportunity.source ?? null,
-              p_website_landing_page:
-                sourceDetailValue ?? oppSourceDetailValue ?? null,
-              p_lead_source: contactSource ?? null,
-              p_data_source: null,
+            p_is_author: currContact.type === 'author',
+            p_current_author: oppActiveOrPastAuthor === 'yes',
+            p_publisher: publisher ?? oppPublisher ?? null,
+            p_genre: oppGenre ? oppGenre : null,
+            p_book_description: oppBookDescription ?? null,
+            p_writing_status: oppWritingProcess ?? null,
+            p_rating: pipelineName ?? oppPipelineBackup ?? null,
+            p_pipeline_stage: pipelineStageName ?? null,
+            p_stage_id: currOpportunity.pipelineStageId ?? null,
+            p_pipeline_id: currOpportunity.pipelineId ?? null,
 
-              // Opportunity
-              p_lead_owner: currContact.assignedTo ?? null,
-              p_lead_value: currOpportunity.monetaryValue ?? '0',
-              p_is_author: currContact.type === 'author',
-              p_current_author:
-                String(oppActiveOrPastAuthor).toLowerCase() === 'yes' ||
-                oppActiveOrPastAuthor === true,
-              p_publisher: publisher ?? oppPublisher ?? null,
-              p_genre: oppGenre ?? null,
-              p_book_description: oppBookDescription ?? 'Unprovided',
-              p_writing_status: oppWritingProcess ?? 'Unknown',
-              p_rating: pipelineName ?? oppPipelineBackup ?? null,
-              p_pipeline_stage: pipelineStageName ?? null,
-              p_stage_id: currOpportunity.pipelineStageId ?? null,
-              p_pipeline_id: currOpportunity.pipelineId ?? null,
+            p_opt_out_of_emails: currContact.dnd ?? false,
+            p_outreach_attempt: oppOutreachAttempt ?? 0,
+            p_notes: null,
 
-              // Metadata
-              p_opt_out_of_emails: currContact.dnd ?? false,
-              p_outreach_attempt: parseInt(oppOutreachAttempt ?? '0', 10),
-              p_notes: null,
-
-              // Optional
-              p_new_ghl_contact_id: null,
-              p_new_ghl_opportunity_id: null
-            }
-
-            const updateData = await withRetries(
-              async () => {
-                const { data, error } = await supabase.rpc(
-                  'update_contact_in_star_schema_by_ghl',
-                  updatePayload
-                )
-                if (error) {
-                  const err = new Error(
-                    `RPC update_contact_in_star_schema_by_ghl failed: ${
-                      error.message || JSON.stringify(error)
-                    }`
-                  )
-                  err.status = error?.code || error?.status || null
-                  err.response = { status: err.status, data: error }
-                  throw err
-                }
-                if (!data || data.length === 0) {
-                  console.error(
-                    `${sym.err} ${ansi.red(
-                      'Stored procedure returned empty!'
-                    )} Contact: ${currContact.id}`
-                  )
-                  // Verify if record actually exists in fact_contacts
-                  const { data: checkData, error: checkError } = await supabase
-                    .from('fact_contacts')
-                    .select('fact_id, ghl_contact_id, ghl_opportunity_id')
-                    .eq('ghl_contact_id', updatePayload.p_ghl_contact_id)
-                    .limit(1)
-
-                  if (checkError) {
-                    console.error(
-                      `${sym.err} Verification query failed:`,
-                      checkError
-                    )
-                  } else if (!checkData || checkData.length === 0) {
-                    console.error(
-                      `${sym.err} ${ansi.yellow(
-                        'RECORD NOT FOUND'
-                      )} in fact_contacts with ghl_contact_id='${
-                        updatePayload.p_ghl_contact_id
-                      }'`
-                    )
-                    console.error(
-                      `${sym.err} This contact was marked as "existing" in the batch check but doesn't actually exist. Possible race condition or the batch check query is wrong.`
-                    )
-                  } else {
-                    console.error(
-                      `${sym.err} ${ansi.yellow(
-                        'RECORD EXISTS'
-                      )} in fact_contacts:`,
-                      JSON.stringify(checkData[0])
-                    )
-                    console.error(
-                      `${sym.err} The stored procedure FOR loop didn't find it. Check if there's a lock, constraint, or the helper functions are failing silently.`
-                    )
-                  }
-
-                  throw new Error(
-                    `RPC update_contact_in_star_schema_by_ghl returned empty for ${currContact.id}. See logs above for details.`
-                  )
-                }
-                return data
-              },
-              { retries: 3, baseDelay: 500 }
-            )
-
-            updatedFactIDs.push(updateData[0].out_fact_id)
-
-            // Check if opportunity_id needs updating (avoid duplicate key constraint)
-            await withRetries(
-              async () => {
-                // First, check current ghl_opportunity_id
-                const { data: currentData, error: checkError } = await supabase
-                  .from('fact_contacts')
-                  .select('ghl_opportunity_id')
-                  .eq('ghl_contact_id', currContact.id)
-                  .limit(1)
-
-                if (checkError) {
-                  const err = new Error(
-                    `Error checking current opportunity id: ${JSON.stringify(
-                      checkError
-                    )}`
-                  )
-                  err.status = checkError?.code || checkError?.status || null
-                  err.response = { status: err.status, data: checkError }
-                  throw err
-                }
-
-                // Only update if it's different (or null)
-                if (currentData.ghl_opportunity_id !== currOpportunity.id) {
-                  try {
-                    const { error: updateOppIdError } = await supabase
-                      .from('fact_contacts')
-                      .update({
-                        ghl_opportunity_id: currOpportunity.id
-                      })
-                      .eq('ghl_contact_id', currContact.id)
-
-                    if (updateOppIdError) {
-                      const err = new Error(
-                        `Error updating opportunity id: ${JSON.stringify(
-                          updateOppIdError
-                        )}`
-                      )
-                      err.status =
-                        updateOppIdError?.code ||
-                        updateOppIdError?.status ||
-                        null
-                      err.response = {
-                        status: err.status,
-                        data: updateOppIdError
-                      }
-                      throw err
-                    }
-                  } catch (err) {
-                    //do nothing
-                  }
-                }
-              },
-              { retries: 3, baseDelay: 500 }
-            )
-          } else {
-            const insertPayload = {
-              p_first_name: currContact.firstName ?? null,
-              p_last_name: currContact.lastName ?? null,
-              p_email: currContact.email ?? null,
-              p_phone_number: currContact.phone ?? null,
-              p_full_address: fullAddress ?? null,
-
-              p_address_line1: currContact.address1 ?? 'Unprovided',
-              p_address_line2: null,
-              p_city: currContact.city ?? null,
-              p_state_region: currContact.state ?? null,
-              p_postal_code: currContact.postalCode ?? null,
-              p_country: currContact.country ?? null,
-              p_time_zone: timezone ?? oppTimezone ?? null,
-
-              p_source: currContact.source ?? currOpportunity.source ?? null,
-              p_website_landing_page:
-                sourceDetailValue ?? oppSourceDetailValue ?? null,
-              p_lead_source: contactSource ?? 'Unprovided',
-              p_data_source: 'direct',
-              p_lead_owner: currContact.assignedTo ?? null,
-              p_lead_value: currOpportunity.monetaryValue
-                ? String(currOpportunity.monetaryValue)
-                : null,
-
-              p_is_author: currContact.type === 'author',
-              p_current_author: oppActiveOrPastAuthor === 'yes',
-              p_publisher: publisher ?? oppPublisher ?? null,
-              p_genre: oppGenre ? oppGenre : null,
-              p_book_description: oppBookDescription ?? null,
-              p_writing_status: oppWritingProcess ?? null,
-              p_rating: pipelineName ?? oppPipelineBackup ?? null,
-              p_pipeline_stage: pipelineStageName ?? null,
-              p_stage_id: currOpportunity.pipelineStageId ?? null,
-              p_pipeline_id: currOpportunity.pipelineId ?? null,
-
-              p_opt_out_of_emails: currContact.dnd ?? false,
-              p_outreach_attempt: oppOutreachAttempt ?? 0,
-              p_notes: null,
-
-              p_ghl_contact_id: currContact.id ?? null,
-              p_ghl_opportunity_id: currOpportunity.id
-            }
-
-            const insertData = await withRetries(
-              async () => {
-                const { data, error } = await supabase.rpc(
-                  'insert_contact_to_star_schema',
-                  insertPayload
-                )
-                if (error) {
-                  const err = new Error(
-                    `RPC insert_contact_to_star_schema failed: ${
-                      error.message || JSON.stringify(error)
-                    }`
-                  )
-                  err.status = error?.code || error?.status || null
-                  err.response = { status: err.status, data: error }
-                  throw err
-                }
-                if (!data || data.length === 0) {
-                  throw new Error(
-                    `RPC insert_contact_to_star_schema returned empty result for contact ${currContact.id} (${currContact.firstName} ${currContact.lastName}). This usually means the stored procedure failed silently or returned nothing.`
-                  )
-                }
-                return data
-              },
-              { retries: 3, baseDelay: 500 }
-            )
-
-            const { out_einstein_url, out_fact_id, out_ghl_contact_id } =
-              insertData[0]
-            await addEinsteinURL({
-              ghl_opportunity_id: currOpportunity.id,
-              ghl_contact_id: out_ghl_contact_id,
-              einstein_url: out_einstein_url
-            })
-
-            insertedFactIDS.push(out_fact_id)
+            p_ghl_contact_id: currContact.id ?? null,
+            p_ghl_opportunity_id: currOpportunity.id
           }
+
+          const insertData = await withRetries(
+            async () => {
+              const { data, error } = await supabase.rpc(
+                'insert_contact_to_star_schema',
+                insertPayload
+              )
+              if (error) {
+                const err = new Error(
+                  `RPC insert_contact_to_star_schema failed: ${
+                    error.message || JSON.stringify(error)
+                  }`
+                )
+                err.status = error?.code || error?.status || null
+                err.response = { status: err.status, data: error }
+                throw err
+              }
+              if (!data || data.length === 0) {
+                throw new Error(
+                  `RPC insert_contact_to_star_schema returned empty result for opportunity ${currOpportunity.id} (${currContact.firstName} ${currContact.lastName}). This usually means the stored procedure failed silently or returned nothing.`
+                )
+              }
+              return data
+            },
+            { retries: 3, baseDelay: 500 }
+          )
+
+          const { out_einstein_url, out_fact_id, out_ghl_contact_id } =
+            insertData[0]
+
+          await addEinsteinURL({
+            ghl_opportunity_id: currOpportunity.id,
+            ghl_contact_id: out_ghl_contact_id,
+            einstein_url: out_einstein_url
+          })
+
+          insertedFactIDS.push(out_fact_id)
+          console.log(
+            `${sym.ok} ${ansi.green('Successfully inserted')} Opportunity ${
+              currOpportunity.id
+            } with fact_id: ${out_fact_id}`
+          )
         } catch (error) {
           console.error(
-            `${sym.err} ${ansi.red('Error processing contact')}: ${ansi.yellow(
-              `page ${currPage}, #${currNumber}`
-            )} ${ansi.gray(String(currName))}\n  ${ansi.dim(String(error))}`
+            `${sym.err} ${ansi.red(
+              'Error processing opportunity'
+            )}: ${ansi.yellow(`page ${currPage}, #${currNumber}`)} ${ansi.gray(
+              String(currName)
+            )}\n  ${ansi.dim(String(error))}`
           )
           errorOpportunities.push(
             `Name: ${currName}, Email ${currEmail}, ContactID: ${currContactID}, Opportunity ID: ${currOpportunityID} Reason: ${error} `
@@ -998,4 +844,13 @@ do {
 } while ((currOpportunityPage?.length ?? 0) !== 0)
 
 const end = performance.now()
-console.log(`Execution time: ${end - start} ms`)
+console.log(`\n\n${ansi.green('✓')} Script completed successfully`)
+console.log(`${ansi.cyan('Execution time:')} ${formatDuration(end - start)}`)
+console.log(
+  `${ansi.cyan('Total Opportunities Processed:')} ${processedOpportunities}`
+)
+console.log(`${ansi.green('Inserted:')} ${insertedFactIDS.length}`)
+console.log(
+  `${ansi.yellow('Skipped (Already Exist):')} ${skippedOpportunities.length}`
+)
+console.log(`${ansi.red('Errors:')} ${errorOpportunities.length}`)

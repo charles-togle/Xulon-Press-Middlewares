@@ -1,0 +1,32 @@
+{
+    "name": "xulon-press-csv-importer",
+    "version": "1.0.0",
+    "description": "CSV import tool for Xulon Press - imports leads from CSV to Supabase and GoHighLevel CRM",
+    "type": "module",
+    "main": "extractCsv.mjs",
+    "scripts": {
+        "import": "node extractCsv.mjs",
+        "import:dry-run": "node extractCsv.mjs --write=true --dry-run=true --limit=5",
+        "test": "echo \"No tests configured\" && exit 0"
+    },
+    "dependencies": {
+        "@supabase/supabase-js": "^2.39.3",
+        "csv-parser": "^3.2.0",
+        "dotenv": "^16.4.5",
+        "p-limit": "^7.2.0"
+    },
+    "engines": {
+        "node": ">=18.0.0"
+    },
+    "keywords": [
+        "csv",
+        "import",
+        "supabase",
+        "gohighlevel",
+        "crm",
+        "xulon-press",
+        "lead-import"
+    ],
+    "author": "Xulon Press",
+    "license": "ISC"
+}

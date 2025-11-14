@@ -1,0 +1,28 @@
+{
+  "jobId": "1770c6da-1cb9-4fe7-900a-06287fe15ae6",
+  "startTime": "2025-11-07T14:02:00.532Z",
+  "endTime": "2025-11-07T14:07:23.157Z",
+  "executionTimeSeconds": "324.52",
+  "cleanup": {
+    "totalGhlOpportunities": 5360,
+    "totalDbOpportunities": 5360,
+    "deletedOpportunities": 0,
+    "errorCount": 0
+  },
+  "insert": {
+    "opportunitiesProcessed": 2,
+    "insertedOpportunities": 2,
+    "skippedOpportunities": 0,
+    "errorCount": 0
+  },
+  "update": {
+    "opportunitiesProcessed": 0,
+    "updatedOpportunities": 0,
+    "errorCount": 0
+  },
+  "errors": [],
+  "insertedFactIDs": [
+    "e08381d6-423b-4819-88ff-23f1426c50f0",
+    "937059e0-41da-45d0-8ba4-fd9425158967"
+  ]
+}

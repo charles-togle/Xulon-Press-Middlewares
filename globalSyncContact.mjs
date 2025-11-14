@@ -48,9 +48,7 @@ const getArg = (name, fallback = undefined) => {
 const START_PAGE = Number(getArg('start-page', process.env.START_PAGE || 1))
 const PAGE_LIMIT = Number(getArg('page-limit', process.env.PAGE_LIMIT || 500))
 // Safe concurrency to avoid API rate limits; tune as needed
-const CONCURRENCY = Number(
-  getArg('concurrency', process.env.CONCURRENCY || 100)
-)
+const CONCURRENCY = Number(getArg('concurrency', process.env.CONCURRENCY || 3))
 
 // Simple promise pool for per-page parallelism
 async function promisePool (items, worker, concurrency) {
@@ -212,7 +210,7 @@ const start = performance.now()
 const EMAIL = process.env.SUPABASE_SUPERADMIN_EMAIL
 const PASSWORD = process.env.SUPABASE_SUPERADMIN_PASSWORD
 const SUPABASE_URL = process.env.SUPABASE_URL
-const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
 const API_VERSION = process.env.API_VERSION || '2021-07-28'
 const TOKEN = process.env.TOKEN
 const BASE_URL = process.env.BASE_URL
@@ -225,7 +223,7 @@ const HEADERS = {
   'User-Agent': 'vertexlabs-ghl-importer/1.0'
 }
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
 
 const { error: loginError } = await supabase.auth.signInWithPassword({
   email: EMAIL,
@@ -400,9 +398,9 @@ do {
           if (contactExists) {
             // Update
             const { data: updateData, error: updateError } = await supabase.rpc(
-              'update_contact_in_star_schema_using_contact_id',
+              'update_contact_in_star_schema_by_ghl',
               {
-                p_contact_id_matcher: currContact.id,
+                p_ghl_contact_id: currContact.id,
                 p_first_name: currContact.firstName ?? null,
                 p_last_name: currContact.lastName ?? null,
                 p_email: currContact.email ?? null,
@@ -421,13 +419,13 @@ do {
                 p_source: currContact.source ?? null,
                 p_website_landing_page: sourceDetailValue ?? null,
                 p_lead_source: contactSource,
+                p_data_source: null,
                 p_lead_owner: currContact.assignedTo ?? null,
                 p_lead_value: null,
 
                 p_is_author: currContact.type === 'author',
                 p_current_author: null,
                 p_publisher: publisher,
-                p_publishing_writing_process_stage: 'Unprovided',
                 p_genre: null,
                 p_book_description: null,
                 p_writing_status: null,
@@ -435,12 +433,6 @@ do {
                 p_pipeline_stage: null,
                 p_stage_id: null,
                 p_pipeline_id: null,
-
-                p_create_date: null,
-                p_alternate_create_date: null,
-                p_lead_conversion_date: null,
-                p_lead_id: null,
-                p_last_modified_date: new Date().toISOString(),
 
                 p_opt_out_of_emails: currContact.dnd ?? false,
                 p_outreach_attempt: null,
@@ -478,27 +470,20 @@ do {
                 p_source: currContact.source ?? null,
                 p_website_landing_page: sourceDetailValue ?? null,
                 p_lead_source: contactSource ?? 'Unprovided',
+                p_data_source: 'direct',
                 p_lead_owner: currContact.assignedTo ?? null,
                 p_lead_value: null,
 
                 p_is_author: currContact.type === 'author',
                 p_current_author: false,
                 p_publisher: publisher,
-                p_publishing_writing_process_stage: 'Unprovided',
-                p_genre: [],
+                p_genre: null,
                 p_book_description: null,
                 p_writing_status: null,
                 p_rating: 'Unknown',
                 p_pipeline_stage: 'Unknown',
                 p_stage_id: null,
                 p_pipeline_id: null,
-
-                p_create_date:
-                  currContact.createdBy?.timestamp ?? new Date().toISOString(),
-                p_alternate_create_date: null,
-                p_lead_conversion_date: null,
-                p_lead_id: null,
-                p_last_modified_date: new Date().toISOString(),
 
                 p_opt_out_of_emails: currContact.dnd ?? false,
                 p_outreach_attempt: 0,

@@ -1,0 +1,22 @@
+
+════════════════════════════════════════════════════════════════════════════════
+                    GHL OPPORTUNITY INSERT-ONLY SYNC SUMMARY
+════════════════════════════════════════════════════════════════════════════════
+Timestamp: 2025-11-06T07:42:12.499Z
+Exit Code: 0
+Total Execution Time: 00:00:00.501
+Opportunities Processed: 0
+Total Opportunities: 0
+Pages Processed: 1
+Last Processed Contact: {}
+
+ERROR OPPORTUNITIES (1):
+1. Name: undefined, Email undefined, ContactID: undefined, Opportunity ID: undefined Reason: Error: HTTP 400 Bad Request - {"message":"limit must not be greater than 100","error":"Bad Request","statusCode":400,"traceId":"f4eb617f-ba09-4d65-b8bd-91c15c0ffa76"} 
+
+INSERTED FACT IDs (0):
+
+
+SKIPPED OPPORTUNITIES (Already Exist) (0):
+
+
+════════════════════════════════════════════════════════════════════════════════

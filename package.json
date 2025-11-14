@@ -7,9 +7,13 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.3",
+    "axios": "^1.12.2",
+    "csv-parser": "^3.2.0",
     "dotenv": "^17.2.2",
     "fs": "^0.0.1-security",
     "node-fetch": "^3.3.2",
+    "p-limit": "^7.2.0",
+    "path": "^0.12.7",
     "resend": "^6.1.0"
   },
   "name": "xulon-press-test-functions",

@@ -1,0 +1,14 @@
+{
+  "timestamp": "2025-11-06T07:42:12.499Z",
+  "exitCode": 0,
+  "executionTime": 0.5012265,
+  "opportunitiesProcessed": 0,
+  "totalOpportunities": 0,
+  "currentPage": 2,
+  "errorOpportunities": [
+    "Name: undefined, Email undefined, ContactID: undefined, Opportunity ID: undefined Reason: Error: HTTP 400 Bad Request - {\"message\":\"limit must not be greater than 100\",\"error\":\"Bad Request\",\"statusCode\":400,\"traceId\":\"f4eb617f-ba09-4d65-b8bd-91c15c0ffa76\"} "
+  ],
+  "insertedFactIDs": [],
+  "skippedOpportunities": [],
+  "lastProcessedContact": {}
+}

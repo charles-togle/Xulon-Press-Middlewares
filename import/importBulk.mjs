@@ -158,6 +158,9 @@ const createGhlNote = async (payload, contactId) => {
   return note_info
 }
 
+
+
+
 //PROCESS
 
 //get contact in supabase

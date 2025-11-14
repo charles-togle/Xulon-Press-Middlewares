@@ -1,0 +1,20 @@
+{
+  "jobId": "e3b3aba8-7c6f-4a71-8770-6e8eab4e9962",
+  "startTime": "2025-11-06T08:07:20.029Z",
+  "endTime": "2025-11-06T08:09:53.250Z",
+  "executionTimeSeconds": "153.49",
+  "cleanup": {
+    "totalGhlOpportunities": 5300,
+    "totalDbOpportunities": 5302,
+    "deletedOpportunities": 0,
+    "errorCount": 0
+  },
+  "insert": {
+    "opportunitiesProcessed": 0,
+    "insertedOpportunities": 0,
+    "skippedOpportunities": 0,
+    "errorCount": 0
+  },
+  "errors": [],
+  "insertedFactIDs": []
+}
